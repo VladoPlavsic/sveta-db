@@ -1,0 +1,8 @@
+CREATE TABLE public.services
+(
+    id SERIAL NOT NULL,
+    service character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    service_description text COLLATE pg_catalog."default",
+    CONSTRAINT services_pkey PRIMARY KEY (id),
+    CONSTRAINT services_service_key UNIQUE (service)
+);

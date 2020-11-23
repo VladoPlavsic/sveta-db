@@ -1,0 +1,6 @@
+\copy clients (fio,tel,job,homeadress,salary,call_back) FROM 'C:\dev\BD-5th-sem\src\database\src\data\dummy-data\clients.txt' WITH CSV DELIMITER ',' HEADER ENCODING 'UTF8';
+
+\copy services (service, service_description) FROM 'C:\dev\BD-5th-sem\src\database\src\data\dummy-data\services.txt' WITH CSV DELIMITER ',' ENCODING 'UTF-8';
+
+\copy statuses (status) FROM 'C:\dev\BD-5th-sem\src\database\src\data\dummy-data\statuses.txt' WITH CSV DELIMITER ',' ENCODING 'UTF-8';
+

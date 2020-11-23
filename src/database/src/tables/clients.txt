@@ -1,0 +1,11 @@
+CREATE TABLE public.clients
+(
+    id  SERIAL NOT NULL ,
+    fio character varying(100)  NOT NULL,
+    tel character varying(12) NOT NULL,
+    job character varying(50) NOT NULL,
+    homeadress character varying(50)  NOT NULL,
+    salary numeric(9,2) NOT NULL,
+    call_back boolean NOT NULL,
+    CONSTRAINT clients_pkey PRIMARY KEY (id)
+);

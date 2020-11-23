@@ -1,0 +1,7 @@
+CREATE TABLE public.statuses
+(
+    id SERIAL NOT NULL,
+    status character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT statuses_pkey PRIMARY KEY (id),
+    CONSTRAINT statuses_status_key UNIQUE (status)
+);

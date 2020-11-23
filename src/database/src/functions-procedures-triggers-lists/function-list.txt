@@ -1,0 +1,2 @@
+/*ADMINISTRATOR PRIVILEGES NEDED*/
+insert_service(service_p VARCHAR(20), service_description_p TEXT)
