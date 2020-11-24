@@ -155,9 +155,11 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 CREATE ROLE group_name;
-GRANT SELECT, UPDATE ON live, clients TO group_name;
-GRANT SELECT ON statuses, services TO group_name;
-GRANT EXECUTE ON on_update_status_live, update_live_status TO group_name;
+execute 'CREATE ROLE ' ||group_name;
+execute 'GRANT SELECT, UPDATE ON live, clients TO ' ||group_name;
+execute 'GRANT DELETE ON live TO ' ||group_name;
+execute 'GRANT SELECT ON statuses, services TO ' ||group_name; 
+execute 'GRANT SELECT ON managers_view, managers_live_view TO ' ||group_name;
 END;
 $$;
 
@@ -171,3 +173,58 @@ execute  'CREATE ROLE ' ||username|| ' WITH LOGIN PASSWORD ''' ||password|| ''' 
 END;
 $$;
 
+
+
+------------------------------------------------------------------------------CHECK IF SUPERUSER--------------------------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION is_super() RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+BEGIN
+RETURN (SELECT usesuper FROM pg_user WHERE usename = CURRENT_USER);
+END;
+$$;
+
+
+
+-------------------------------------------------------------------------CREATE VIEW FOR MANAGERS---------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION managers_view_function()
+RETURNS TABLE (
+    fio_p VARCHAR(100),
+    tel_p VARCHAR(12),
+    homeadress_p VARCHAR(100),
+    salary_p NUMERIC(9,2)
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+RETURN QUERY SELECT fio, tel, homeadress, salary FROM clients WHERE call_back = true ORDER BY id;
+END;
+$$;
+
+
+CREATE OR REPLACE VIEW managers_view AS
+SELECT * FROM managers_view_function();
+
+/*
+CREATE OR REPLACE FUNCTION create_table_for_view(t_name VARCHAR(30))
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+EXECUTE format('
+CREATE TABLE IF NOT EXISTS %I (
+    fio_p VARCHAR(100),
+    tel_p VARCHAR(12),
+    adress_p VARCHAR(50),
+    salary_p NUMERIC(9,2)
+)', t_name);
+FOR i IN 1..(SELECT count(id) FROM services) LOOP
+EXECUTE format('ALTER TABLE %I ADD COLUMN IF NOT EXISTS %I VARCHAR(30)', t_name, (SELECT service FROM services WHERE id = i));
+END LOOP;
+END;
+$$;
+*/
+
+CREATE OR REPLACE VIEW managers_live_view AS
+SELECT * FROM live ORDER BY client_id, service_id;

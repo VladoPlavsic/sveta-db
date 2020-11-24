@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.1/socket.io.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app" class="text-center">
+        <div v-if="loggedIn" id="title-quote">
+            Welcome {{username}}
+        </div>
+
+        <div v-if="loggedIn" class="row">
+            <div v-if="admin">
+                <div style="min-height: 50px; min-width: 50px; background: red">
+
+                </div>
+            </div>
+            <div v-else-if="manager" class="manager">
+                <div class="list">
+                    <table>
+                        <thead>
+                            <th>ФИО</th>
+                            <th>Телефон</th>
+                            <th>Адрес проживания</th>
+                            <th>Зарплата</th>
+                            <th>Услуги</th>
+                        </thead>
+                        <tr v-for="client in clients">
+                            <td>{{client.name}}</td>
+                            <td>{{client.phone}}</td>
+                            <td>{{client.adress}}</td>
+                            <td>{{client.salary}}</td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="dropbtn">Dropdown</button>
+                                    <div class="dropdown-content">
+                                        <table v-for="service in services">
+                                            <tr>
+                                                <td>{{service}}</td>
+                                                <td></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div v-else-if="user">
+                <div style="min-height: 50px; min-width: 50px; background: white">
+
+                </div>
+            </div>
+
+        </div>
+        <div v-else>
+            <form>
+                <div class="form">
+                    <div id="login-informations">
+                        <span v-for="item in loginInformations">
+                            <span v-html="item"></span>
+                        </span>
+                    </div>
+                    <div>
+                        <input v-model="username" autocomplete="off" id="username" placeholder="Username"><br>
+                        <input v-model="password" id="password" placeholder="Password"><br>
+                        <button type="button" class="btn btn-primary" @click="submitNick">Log In</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+<script>
+    var socket = io({ upgrade: false });
+    var app = new Vue({
+        el: '#app',
+        data: {
+            admin: false,
+            manager: false,
+            user: false,
+            loggedIn: false,
+            loginInformations: ['<p>LogIn<p>'],
+            clients: [],
+            statuses: [],
+            services: [],
+            socketServer: socket,
+            username: '',
+            password: ''
+        },
+        methods: {
+            emitDefend() {
+                this.socketServer.emit('defend', this.nickname)
+                this.$refs["attack-button"].disabled = true;
+                this.$refs["defend-button"].disabled = true;
+                setTimeout(() => { this.$refs["attack-button"].disabled = false; this.$refs["defend-button"].disabled = false; }, 2000);
+            },
+            emitAttack() {
+                this.socketServer.emit('attack', this.nickname)
+                this.$refs["attack-button"].disabled = true;
+                this.$refs["defend-button"].disabled = true;
+                setTimeout(() => { this.$refs["attack-button"].disabled = false; this.$refs["defend-button"].disabled = false; }, 1000);
+            },
+            submitNick() {
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.post('http://localhost:1337/user', {
+                    username: this.username,
+                    password: this.password
+                })
+                    .then((response) => {
+                        if (response.data.error) {
+                            this.loginInformations.push('<p style="margin-left: -50px; color: red">Incorrect username<br>or passwrod!<p>')
+                            setTimeout(() => { this.loginInformations.pop(1) }, 3000);
+                            return;
+                        }
+
+                        if (response.data.admin)
+                            this.admin = true;
+                        else
+                            this.manager = true;
+
+                        this.loggedIn = true;
+
+                        if (this.manager) {
+                            this.services = response.data.services;
+                            for (i = 0; i < response.data.data.length; i++) {
+                                this.clients.push({ name: response.data.data[i].name, phone: response.data.data[i].phone, adress: response.data.data[i].adress, salary: response.data.data[i].salary })
+                                for (j = 0; j < this.services.length; j++) {
+                                    this.statuses.push(response.data.data[i].statuses)
+                                }
+                            }
+                        }
+                    })
+            },
+        },
+        created: function () {
+            window.onbeforeunload = () => {
+                this.socketServer.emit('disconnect');
+            }
+
+            this.socketServer.on('health_update', (data) => {
+                console.log("Recievede update on health")
+                if (data[this.towerName] == -5000) {
+                    this.enemyTowerHealth = data[this.enemyTowerName]
+                }
+                else {
+                    this.towerDefenders = data[this.towerName + " Defenders"];
+                    this.towerHealth = data[this.towerName]
+
+                    this.enemyTowerDefenders = data[this.enemyTowerName + " Defenders"];
+                    this.enemyTowerHealth = data[this.enemyTowerName]
+                }
+            });
+
+            this.socketServer.on('health_attacked', () => {
+                console.log("Health attacked");
+                this.towerDefense -= 100;
+                if (this.towerDefense < 0) {
+                    this.towerHealth += this.towerDefense;
+                    this.towerDefense = 0;
+                }
+            });
+
+            this.socketServer.on('shield', () => {
+                console.log("Shield updated");
+                this.towerDefense += 150;
+            });
+        },
+    });
+</script>
+<style>
+    * {
+        font-family: 'Noto Sans', sans-serif;
+    }
+
+    body {
+        background-color: #2c0055;
+    }
+
+    .form {
+        background-color: greenyellow;
+        position: absolute;
+        left: 50%;
+        bottom: 50%;
+        transform: translate(-50%, 50%);
+        min-width: min-content;
+        min-height: min-content;
+        -webkit-animation: expand 3s;
+
+    }
+
+    @-webkit-keyframes expand {
+        0% {
+            height: 0px
+        }
+
+        100% {
+            height: 272px;
+        }
+    }
+
+    .form>div>input {
+        border-radius: 99vw;
+        width: 300px;
+        margin: 20px;
+        transition: all 1s ease-in-out;
+
+    }
+
+    .form>div>button {
+        margin: 20px;
+        margin-left: 35%;
+        height: 40px;
+        width: 80px;
+        background: #2c0055;
+        color: white;
+        position: relative;
+        margin-bottom: 25px;
+        border-radius: 32px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+    }
+
+    #login-informations {
+        margin-left: 39%;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: large;
+    }
+
+    #title-quote {
+        text-align: center;
+        color: white;
+        font-size: xx-large;
+        font-family: 'Trocchi', serif;
+        font-size: 45px;
+        font-weight: normal;
+        line-height: 48px;
+    }
+
+    .manager {
+        position: absolute;
+        background-color: greenyellow;
+        margin-top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+
+    .list>table,
+    th,
+    td,
+    tr {
+        border-bottom: 1px solid black;
+    }
+
+    .list>tr,
+    td {
+        padding: 10px;
+    }
+
+    /* Dropdown Button */
+    .dropbtn {
+        background-color: transparent;
+        padding: 16px;
+        border: none;
+    }
+
+    /* The container <div> - needed to position the dropdown content */
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    /* Dropdown Content (Hidden by Default) */
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+    }
+
+    /* Links inside the dropdown */
+    .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    /* Change color of dropdown links on hover */
+    .dropdown-content a:hover {
+        background-color: #ddd;
+    }
+
+    /* Show the dropdown menu on hover */
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+</style>
+
+</html>

@@ -207,7 +207,34 @@ $$;
 
 CREATE TRIGGER on_insert_services_trigger AFTER INSERT ON services FOR EACH ROW EXECUTE FUNCTION on_insert_services();
 
+/*CREATE FUNCTION FOR CHECKIN SUPER*/
+CREATE OR REPLACE FUNCTION is_super() RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+BEGIN
+RETURN (SELECT usesuper FROM pg_user WHERE usename = CURRENT_USER);
+END;
+$$;
 
+
+/*CREATE VIEW FOR MANAGERS*/
+CREATE OR REPLACE FUNCTION managers_view_function()
+RETURNS TABLE (
+    fio_p VARCHAR(100),
+    tel_p VARCHAR(12),
+    homeadress_p VARCHAR(100),
+    salary_p NUMERIC(9,2)
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+RETURN QUERY SELECT fio, tel, homeadress, salary FROM clients WHERE call_back = true;
+END;
+$$;
+
+
+CREATE OR REPLACE VIEW managers_view AS
+SELECT * FROM managers_view_function();
 
 /*CREATE PROCEDURES FOR USER CREATION*/
 
@@ -219,7 +246,8 @@ BEGIN
 execute 'CREATE ROLE ' ||group_name;
 execute 'GRANT SELECT, UPDATE ON live, clients TO ' ||group_name;
 execute 'GRANT DELETE ON live TO ' ||group_name;
-execute 'GRANT SELECT ON statuses, services TO ' ||group_name; 
+execute 'GRANT SELECT ON statuses, services TO ' ||group_name;
+execute 'GRANT SELECT ON managers_view, managers_live_view TO ' ||group_name;
 END;
 $$;
 
@@ -232,5 +260,10 @@ execute  'CREATE ROLE ' ||username|| ' WITH LOGIN PASSWORD ''' ||password|| ''' 
 END;
 $$;
 
+/*CREATE 'MANAGERS' GROUP*/ 
+ call add_group('managers');
 
+/*CREATE ONE USER*/
+call add_user('vlado','vlado','managers');
 
+call add_user('pero','pero','managers');
