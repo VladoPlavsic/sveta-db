@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.1/socket.io.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap" rel="stylesheet">
+    <link href="styles/manager.css" rel="stylesheet">
 </head>
 
 <body>
@@ -24,38 +25,59 @@
                 </div>
             </div>
             <div v-else-if="manager" class="manager">
-                <div class="list">
-                    <table>
-                        <thead>
-                            <th>ФИО</th>
-                            <th>Телефон</th>
-                            <th>Адрес проживания</th>
-                            <th>Зарплата</th>
-                            <th>Услуги</th>
-                        </thead>
-                        <tr v-for="client in clients">
-                            <td>{{client.name}}</td>
-                            <td>{{client.phone}}</td>
-                            <td>{{client.adress}}</td>
-                            <td>{{client.salary}}</td>
-                            <td>
-                                <div class="dropdown">
-                                    <button class="dropbtn">Dropdown</button>
-                                    <div class="dropdown-content">
-                                        <table v-for="service in services">
-                                            <tr>
-                                                <td>{{service}}</td>
-                                                <td></td>
-                                            </tr>
-                                        </table>
+                <div>
+                    <ul class="responsive-table">
+                        <li class="table-header" style="margin-bottom: 25px;">
+                            <div class="col col-1">Ф И О</div>
+                            <div class="col col-2">Телефон</div>
+                            <div class="col col-3">Адрес проживания</div>
+                            <div class="col col-4">Зарплата</div>
+                            <div class="col col-5" style="padding-top: 15px;">Услуги</div>
+                            <div class="col col-6" style="padding-top: 15px;">Еще</div>
+                        </li>
+                        <div v-for="client in clients" class="responsive-table">
+                            <li class="table-row">
+                                <div class="col col-1">{{client.name}}</div>
+                                <div class="col col-2">{{client.phone}}</div>
+                                <div class="col col-3">{{client.adress}}</div>
+                                <div class="col col-4">{{client.salary}} &#8381</div>
+                                <div class="col col-5">
+                                    <div class="dropdown">
+                                        <button class="dropbtn">•••</button>
+                                        <div class="dropdown-content">
+                                            <table v-for="service in services">
+                                                <tr>
+                                                    <td style="min-width: 200px;">{{service}}</td>
+                                                    <td style="text-align: right;">
+                                                        <img :src="getStatus()" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
-                    </table>
+                                <div class="col col-6" style="font-size: larger;">
+                                    <button class="collapsible" @click="more(event)">+</button>
+                                </div>
+                            </li>
+                            <div class="content" v-if="isMore">
+                                <table style="min-width: 100%;" v-for="service in services">
+                                    <tr class="content-table">
+                                        <td class="content-col1">{{service}}</td>
+                                        <td class="content-col2">
+                                            <label class="switch" v-html="getStatusExpanded()">
+                                            </label>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div style="min-height: 50px;">
+                                    <button class="submitbutton" style="position: absolute; right: 20px;">Apply</button>
+                                </div>
+                            </div>
+                    </ul>
                 </div>
             </div>
-            <div v-else-if="user">
+            <div v-else-if=" user">
                 <div style="min-height: 50px; min-width: 50px; background: white">
 
                 </div>
@@ -73,7 +95,8 @@
                     <div>
                         <input v-model="username" autocomplete="off" id="username" placeholder="Username"><br>
                         <input v-model="password" id="password" placeholder="Password"><br>
-                        <button type="button" class="btn btn-primary" @click="submitNick">Log In</button>
+                        <button type="button" class="btn btn-primary" @click="submitNick">Log
+                            In</button>
                     </div>
                 </div>
             </form>
@@ -95,9 +118,48 @@
             services: [],
             socketServer: socket,
             username: '',
-            password: ''
+            password: '',
+            imagePath: '/img/',
+            isMore: false,
+            msg: "Before"
         },
         methods: {
+            more(event) {
+                this.extracted = []
+                var parentSender = event.target.parentElement
+                var grandparentSender = parentSender.parentElement
+                var content = grandparentSender.nextElementSibling;
+                displayStyle = getComputedStyle(content).display
+                if (displayStyle === "none")
+                    content.style.display = "block";
+                else
+                    content.style.display = "none";
+
+                var status = parentSender.previousElementSibling.childNodes[0].childNodes[2].childNodes;
+                statuses = []
+                for (i = 0; i < status.length; i++) {
+                    statuses.push(status[i].getElementsByTagName("img")[0].src.split("/").pop());
+                }
+                statuses.forEach(element => this.extracted.push(element.split('.')[0].replace("%20", " ")));
+            },
+            getStatus() {
+                if (this.index === this.statuses.length - 1)
+                    this.index = -1;
+                this.index++;
+                return this.imagePath + this.statuses[this.index] + ".png";
+            },
+            getStatusExpanded() {
+                if (this.indexExpanded === this.statuses.length - 1)
+                    this.indexExpanded = -1;
+                this.indexExpanded++;
+                if (this.statuses[this.indexExpanded] === "yes")
+                    return '<input type = "checkbox"" checked disabled ><span class="slider round" style="box-shadow: 0 0 1px #2196F3; background-color: green;"></span>';
+                else if (this.statuses[this.indexExpanded] === "no")
+                    return '<input type = "checkbox" disabled ><span class="slider round" style="box-shadow: 0 0 1px #2196F3; background-color: red;"></span>';
+                else
+                    return '<input type = "checkbox" ><span onclick="test()" class="slider round"></span>';
+            },
+
             emitDefend() {
                 this.socketServer.emit('defend', this.nickname)
                 this.$refs["attack-button"].disabled = true;
@@ -135,18 +197,20 @@
                             for (i = 0; i < response.data.data.length; i++) {
                                 this.clients.push({ name: response.data.data[i].name, phone: response.data.data[i].phone, adress: response.data.data[i].adress, salary: response.data.data[i].salary })
                                 for (j = 0; j < this.services.length; j++) {
-                                    this.statuses.push(response.data.data[i].statuses)
+                                    this.statuses.push(response.data.data[i].statuses[j])
                                 }
                             }
                         }
+                        app.index = -1;
+                        app.indexExpanded = -1;
                     })
             },
+
         },
         created: function () {
             window.onbeforeunload = () => {
                 this.socketServer.emit('disconnect');
             }
-
             this.socketServer.on('health_update', (data) => {
                 console.log("Recievede update on health")
                 if (data[this.towerName] == -5000) {
@@ -175,6 +239,15 @@
                 this.towerDefense += 150;
             });
         },
+        mounted: function () {
+            this.isMore = true;
+            test = () => {
+                console.log(this.msg);
+                this.msg = "Workds"
+                console.log(this.msg);
+            };
+        }
+
     });
 </script>
 <style>
@@ -247,65 +320,11 @@
         line-height: 48px;
     }
 
-    .manager {
-        position: absolute;
-        background-color: greenyellow;
-        margin-top: 50px;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-
-    .list>table,
-    th,
-    td,
-    tr {
-        border-bottom: 1px solid black;
-    }
-
-    .list>tr,
-    td {
-        padding: 10px;
-    }
-
     /* Dropdown Button */
     .dropbtn {
         background-color: transparent;
         padding: 16px;
         border: none;
-    }
-
-    /* The container <div> - needed to position the dropdown content */
-    .dropdown {
-        position: relative;
-        display: inline-block;
-    }
-
-    /* Dropdown Content (Hidden by Default) */
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #f1f1f1;
-        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-        z-index: 1;
-    }
-
-    /* Links inside the dropdown */
-    .dropdown-content a {
-        color: black;
-        padding: 12px 16px;
-        text-decoration: none;
-        display: block;
-    }
-
-    /* Change color of dropdown links on hover */
-    .dropdown-content a:hover {
-        background-color: #ddd;
-    }
-
-    /* Show the dropdown menu on hover */
-    .dropdown:hover .dropdown-content {
-        display: block;
     }
 </style>
 

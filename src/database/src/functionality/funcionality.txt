@@ -227,4 +227,4 @@ $$;
 */
 
 CREATE OR REPLACE VIEW managers_live_view AS
-SELECT * FROM live ORDER BY client_id, service_id;
+SELECT status FROM statuses INNER JOIN live ON id = status_id ORDER BY client_id, service_id;

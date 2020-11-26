@@ -63,7 +63,7 @@ class Database:
             organised_data.adress = d[2]
             organised_data.salary = d[3]
             for s in services:
-                organised_data.statuses.append(live[index][2])
+                organised_data.statuses.append(live[index][0])
                 index += 1
             response.data.append(organised_data)
             organised_data = Data()

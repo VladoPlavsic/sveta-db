@@ -236,6 +236,9 @@ $$;
 CREATE OR REPLACE VIEW managers_view AS
 SELECT * FROM managers_view_function();
 
+CREATE OR REPLACE VIEW managers_live_view AS
+SELECT status FROM statuses INNER JOIN live ON id = status_id ORDER BY client_id, service_id;
+
 /*CREATE PROCEDURES FOR USER CREATION*/
 
 /*CREATE GROUP*/
