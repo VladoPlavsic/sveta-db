@@ -13,7 +13,19 @@ class Data(BaseModel):
     statuses: List[int] = None
 
 class Response(BaseModel):
-    error = False
-    admin = False
+    error: bool = False
+    admin: bool = False
     services: List[str] = None
     data: List[Data] = None
+
+class Updates(BaseModel):
+    update: bool = False
+    service: str = None
+    status: str = None
+
+class ClientUpdates(BaseModel):
+    clientname: str = None
+    clientnumber: str = None
+    updated: List[Updates] = None
+    username: str = None
+    password: str = None

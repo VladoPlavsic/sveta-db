@@ -148,6 +148,30 @@ $$;
 
 CREATE TRIGGER on_insert_clients_trigger AFTER INSERT ON clients FOR EACH ROW EXECUTE PROCEDURE on_insert_clients();
 
+/*UTILITY FUNCTION*/
+
+CREATE OR REPLACE FUNCTION get_id_for_update(client_name VARCHAR(100), client_number VARCHAR(12), service_name VARCHAR(50), status_name VARCHAR(20))
+RETURNS TABLE (
+    client_id INTEGER,
+    service_id INTEGER,
+    status_id INTEGER
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    client INTEGER;
+    service INTEGER;
+    status INTEGER;
+BEGIN
+SELECT INTO client clients.id FROM clients WHERE clients.fio LIKE client_name AND clients.tel LIKE client_number;
+SELECT INTO service services.id FROM services WHERE services.service LIKE service_name;
+SELECT INTO status statuses.id FROM statuses WHERE statuses.status LIKE status_name;
+RETURN QUERY SELECt client, service, status;
+END;
+$$;
+
+
+
 /*ON UPDATE LIVE*/
 CREATE OR REPLACE FUNCTION on_update_status_live()
 RETURNS TRIGGER
@@ -228,7 +252,7 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 AS $$
 BEGIN
-RETURN QUERY SELECT fio, tel, homeadress, salary FROM clients WHERE call_back = true;
+RETURN QUERY SELECT fio, tel, homeadress, salary FROM clients WHERE call_back = true ORDER BY id;
 END;
 $$;
 

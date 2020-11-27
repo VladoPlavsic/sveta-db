@@ -1,2 +1,11 @@
+/*ALL*/
+    get_id_for_update(client_name VARCHAR(100), client_number VARCHAR(12), service_name VARCHAR(50), status_name VARCHAR(20))
+    RETURNS TABLE (
+        client_id INTEGER,
+        service_id INTEGER,
+        status_id INTEGER
+    )
+
+
 /*ADMINISTRATOR PRIVILEGES NEDED*/
-insert_service(service_p VARCHAR(20), service_description_p TEXT)
+    insert_service(service_p VARCHAR(20), service_description_p TEXT)

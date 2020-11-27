@@ -71,7 +71,8 @@
                                     </tr>
                                 </table>
                                 <div style="min-height: 50px;">
-                                    <button class="submitbutton" style="position: absolute; right: 20px;">Apply</button>
+                                    <button @click="submitChanges(event)" class="submitbutton"
+                                        style="position: absolute; right: 20px;">Apply</button>
                                 </div>
                             </div>
                     </ul>
@@ -124,6 +125,43 @@
             msg: "Before"
         },
         methods: {
+            submitNick() {
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.post('http://localhost:1337/user', {
+                    username: this.username,
+                    password: this.password
+                })
+                    .then((response) => {
+                        if (response.data.error) {
+                            this.loginInformations.push('<p style="margin-left: -50px; color: red">Incorrect username<br>or passwrod!<p>')
+                            setTimeout(() => { this.loginInformations.pop(1) }, 3000);
+                            return;
+                        }
+
+                        if (response.data.admin) {
+                            this.socketServer.io.uri = "http://localhost:3300";
+                            this.admin = true;
+                        }
+                        else {
+                            this.socketServer.io.uri = "http://localhost:3000";
+                            this.manager = true;
+                        }
+                        this.socketServer.emit('connect');
+                        this.loggedIn = true;
+
+                        if (this.manager) {
+                            this.services = response.data.services;
+                            for (i = 0; i < response.data.data.length; i++) {
+                                this.clients.push({ name: response.data.data[i].name, phone: response.data.data[i].phone, adress: response.data.data[i].adress, salary: response.data.data[i].salary })
+                                for (j = 0; j < this.services.length; j++) {
+                                    this.statuses.push(response.data.data[i].statuses[j])
+                                }
+                            }
+                        }
+                        app.index = -1;
+                        app.indexExpanded = -1;
+                    })
+            },
             more(event) {
                 this.extracted = []
                 var parentSender = event.target.parentElement
@@ -157,9 +195,60 @@
                 else if (this.statuses[this.indexExpanded] === "no")
                     return '<input type = "checkbox" disabled ><span class="slider round" style="box-shadow: 0 0 1px #2196F3; background-color: red;"></span>';
                 else
-                    return '<input type = "checkbox" ><span onclick="test()" class="slider round"></span>';
+                    return '<input type = "checkbox" ><span onclick="test(event)" class="slider round"></span>';
             },
+            submitChanges(event) {
+                console.log(this.username)
+                var parent = event.target.parentElement.parentElement;
+                var parentNodes = parent.childNodes
+                var name = parent.parentElement.childNodes[0].childNodes[0].innerText
+                var phoneNumber = parent.parentElement.childNodes[0].childNodes[2].innerText
+                var inputs = []
+                var spans = []
+                var data = {}
+                var update = {};
+                var updated = []
+                for (i = 0; i < this.services.length; i++) {
+                    inputs.push(parentNodes[i].childNodes[0].childNodes[0].childNodes[2].childNodes[0].childNodes[0]);
+                    spans.push(parentNodes[i].childNodes[0].childNodes[0].childNodes[2].childNodes[0].childNodes[1]);
+                }
+                for (i = 0; i < this.services.length; i++) {
+                    if (inputs[i].disabled === true)
+                        update.update = false;
+                    else {
+                        update.update = true;
+                        update.service = this.services[i];
+                        if (spans[i].style.backgroundColor == "green")
+                            update.status = "yes"
+                        else if (spans[i].style.backgroundColor == "red")
+                            update.status = "no"
+                        else
+                            update.update = false;
+                    }
+                    updated.push(update)
+                    update = {}
+                }
+                data.clientname = name;
+                data.clientnumber = phoneNumber;
+                data.updated = updated;
 
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.put('http://localhost:1337/update', {
+                    clientname: data.clientname,
+                    clientnumber: data.clientnumber,
+                    updated: data.updated,
+                    username: this.username,
+                    password: this.password
+                })
+                    .then((response) => {
+                        if (response.data.error) {
+                            //window.alert("Error ocured, not updated");
+                        }
+                        else {
+                            //window.alert("Updated");
+                        }
+                    })
+            },
             emitDefend() {
                 this.socketServer.emit('defend', this.nickname)
                 this.$refs["attack-button"].disabled = true;
@@ -172,40 +261,6 @@
                 this.$refs["defend-button"].disabled = true;
                 setTimeout(() => { this.$refs["attack-button"].disabled = false; this.$refs["defend-button"].disabled = false; }, 1000);
             },
-            submitNick() {
-                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
-                instance.post('http://localhost:1337/user', {
-                    username: this.username,
-                    password: this.password
-                })
-                    .then((response) => {
-                        if (response.data.error) {
-                            this.loginInformations.push('<p style="margin-left: -50px; color: red">Incorrect username<br>or passwrod!<p>')
-                            setTimeout(() => { this.loginInformations.pop(1) }, 3000);
-                            return;
-                        }
-
-                        if (response.data.admin)
-                            this.admin = true;
-                        else
-                            this.manager = true;
-
-                        this.loggedIn = true;
-
-                        if (this.manager) {
-                            this.services = response.data.services;
-                            for (i = 0; i < response.data.data.length; i++) {
-                                this.clients.push({ name: response.data.data[i].name, phone: response.data.data[i].phone, adress: response.data.data[i].adress, salary: response.data.data[i].salary })
-                                for (j = 0; j < this.services.length; j++) {
-                                    this.statuses.push(response.data.data[i].statuses[j])
-                                }
-                            }
-                        }
-                        app.index = -1;
-                        app.indexExpanded = -1;
-                    })
-            },
-
         },
         created: function () {
             window.onbeforeunload = () => {
@@ -241,10 +296,12 @@
         },
         mounted: function () {
             this.isMore = true;
-            test = () => {
-                console.log(this.msg);
-                this.msg = "Workds"
-                console.log(this.msg);
+            test = (event) => {
+                var background = event.target.style.backgroundColor;
+                if (background === "green")
+                    event.target.style.backgroundColor = "red";
+                else
+                    event.target.style.backgroundColor = "green"
             };
         }
 

@@ -2,7 +2,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database.database import Database
-from  models.models import Login, Response, Data
+from receiver import amqp__ini__
+from sender import sender
+from  models.models import Login, Response, Data, ClientUpdates
 import requests
 import json
 import threading
@@ -41,11 +43,21 @@ def create_user(login: Login):
         response.error = True
     return response
 
+@app.put("/update")
+def update_user(client_updates: ClientUpdates):
+    print(client_updates)
+    db = Database(client_updates.username, client_updates.password)
+    for s in client_updates.updated:
+        if s.update:
+            if s.status:
+                db.update_client(clientname=client_updates.clientname, clientnumber=client_updates.clientnumber,servicename=s.service,statusname=s.status)
+    sender.send("Updated client", "sync")
+    return True
 
 def start_unicorn(app, host, port):
     uvicorn.run(app, host=host, port=port, log_level='error')
 
-'''def start_amqp():
+def start_amqp():
 
     print(f"Started amqp")
 
@@ -60,8 +72,8 @@ def start_unicorn(app, host, port):
 
     amqp__ini__(routing_key="Restlin", amqp_callback=amqp_callback)
 
-'''
+
 if __name__ == "__main__":
-    #amqp = threading.Thread(target=start_amqp)
-    #amqp.start()
+    amqp = threading.Thread(target=start_amqp)
+    amqp.start()
     start_unicorn(app, HOST, PORT)
