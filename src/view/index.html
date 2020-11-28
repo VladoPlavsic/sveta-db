@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap" rel="stylesheet">
     <link href="styles/manager.css" rel="stylesheet">
+    <link href="styles/admin.css" rel="stylesheet">
 </head>
 
 <body>
@@ -20,8 +21,83 @@
 
         <div v-if="loggedIn" class="row">
             <div v-if="admin">
-                <div style="min-height: 50px; min-width: 50px; background: red">
+                <div v-if="admindata === 'Start'" class="admin-canvas">
+                    <button class="edit-button" @click="adminData(event)">Clients</button>
+                    <button class="edit-button" @click="adminData(event)">Services</button>
+                    <button class="edit-button" @click="adminData(event)">Managers</button>
+                </div>
+                <div v-else-if="admindata === 'Clients'">
+                    <div>
+                        <a @click="adminPrevious()" class="previous around">&#8249;</a>
+                    </div>
+                    <ul class="admin-list">
+                        <li class="admin-list-item">
+                            <div class="col-id">ID</div>
+                            <div class="col-fio">Ф И О</div>
+                            <div class="col-tel">Телефон</div>
+                            <div class="col-adress">Адрес</div>
+                            <div class="col-job">Работа</div>
+                            <div class="col-salary">Зарплата</div>
+                            <div class="col-callback">Перезвонить</div>
+                            <div class="col-delete">Удалить</div>
+                            <div class="col-update">Изменить</div>
+                        </li>
+                        <div class="admin-list" v-for="client in adminclients">
+                            <li class="admin-list-item">
+                                <div class="col-id">{{client.id}}</div>
+                                <div class="col-fio">{{client.fio}}</div>
+                                <div class="col-tel">{{client.tel}}</div>
+                                <div class="col-adress">{{client.adress}}</div>
+                                <div class="col-job">{{client.job}}</div>
+                                <div class="col-salary">{{client.salary}}</div>
+                                <div class="col-callback">{{client.callBack}}</div>
+                                <div class="col-delete">
+                                    <div>
+                                        <a @click="deleteClient(event)" class="previous">Delete</a>
+                                    </div>
+                                </div>
+                                <div class="col-update">
+                                    <a class="update" @click="updateClient(event)" style="margin: 0px;">Update</a>
+                                </div>
+                            </li>
+                            <li class="content" style="margin-bottom: 20px; min-height: 50px;">
+                                <div class="col-id"></div>
+                                <div class="col-fio"><input placeholder="name"></div>
+                                <div class="col-tel"><input placeholder="telephone"></div>
+                                <div class="col-adress"><input placeholder="adress"></div>
+                                <div class="col-job"><input placeholder="job"></div>
+                                <div class="col-salary"><input placeholder="salary"></div>
+                                <div class="col-callback"><input type="checkbox" style="margin-top:15px;"> </div>
+                                <div class="col-delete"></div>
+                                <div class="col-update">
+                                    <div class="col-delete">
+                                        <div>
+                                            <a @click="submitUpdate(event)" class="update">Update</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </div>
+                    </ul>
+                </div>
 
+                <div v-else-if="admindata === 'Services'">
+                    <div>
+                        <a @click="adminPrevious()" class="previous around">&#8249;</a>
+                    </div>
+                    <div v-for="service in adminservices">
+                        {{service.id}}
+                        {{service.service}}
+                        {{service.serviceDescription}}
+                    </div>
+                </div>
+                <div v-else-if="admindata === 'Managers'">
+                    <div>
+                        <a @click="adminPrevious()" class="previous around">&#8249;</a>
+                    </div>
+                    <div v-for="manager in adminmanagers">
+                        {{manager.name}}
+                    </div>
                 </div>
             </div>
             <div v-else-if="manager" class="manager">
@@ -111,10 +187,12 @@
         data: {
             admin: false,
             manager: false,
-            user: false,
             loggedIn: false,
             loginInformations: ['<p>LogIn<p>'],
             clients: [],
+            adminclients: [],
+            adminservices: [],
+            adminmanagers: [],
             statuses: [],
             services: [],
             socketServer: socket,
@@ -122,7 +200,7 @@
             password: '',
             imagePath: '/img/',
             isMore: false,
-            msg: "Before"
+            admindata: 'Start'
         },
         methods: {
             submitNick() {
@@ -195,10 +273,9 @@
                 else if (this.statuses[this.indexExpanded] === "no")
                     return '<input type = "checkbox" disabled ><span class="slider round" style="box-shadow: 0 0 1px #2196F3; background-color: red;"></span>';
                 else
-                    return '<input type = "checkbox" ><span onclick="test(event)" class="slider round"></span>';
+                    return '<input type = "checkbox" ><span onclick="changeStatus(event)" class="slider round"></span>';
             },
             submitChanges(event) {
-                console.log(this.username)
                 var parent = event.target.parentElement.parentElement;
                 var parentNodes = parent.childNodes
                 var name = parent.parentElement.childNodes[0].childNodes[0].innerText
@@ -242,61 +319,116 @@
                 })
                     .then((response) => {
                         if (response.data.error) {
-                            //window.alert("Error ocured, not updated");
+                            window.alert("Error ocured, not updated");
                         }
                         else {
-                            //window.alert("Updated");
+                            for (i = 0; i < this.services.length; i++) {
+                                if (inputs[i].disabled === false)
+                                    if (spans[i].style.backgroundColor == "green" || spans[i].style.backgroundColor == "red") {
+                                        inputs[i].disabled = true;
+                                        spans[i].onclick = function () { return false; }
+                                    }
+                            }
                         }
                     })
             },
-            emitDefend() {
-                this.socketServer.emit('defend', this.nickname)
-                this.$refs["attack-button"].disabled = true;
-                this.$refs["defend-button"].disabled = true;
-                setTimeout(() => { this.$refs["attack-button"].disabled = false; this.$refs["defend-button"].disabled = false; }, 2000);
+            adminData(event, admindata) {
+                this.adminclients = [];
+                this.adminservices = [];
+                this.adminmanagers = [];
+                if (event !== null)
+                    this.admindata = event.target.innerText;
+                else
+                    this.admindata = admindata
+
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.get('http://localhost:1337/' + this.admindata.toLowerCase())
+                    .then((response) => {
+                        if (!response.data) {
+                            window.alert("Error ocured, not updated");
+                        }
+                        else {
+                            if (this.admindata === "Clients")
+                                for (i = 0; i < response.data.length; i++)
+                                    this.adminclients.push({ id: response.data[i].id_, fio: response.data[i].fio, tel: response.data[i].tel, job: response.data[i].job, salary: response.data[i].salary, adress: response.data[i].homeadress, callBack: response.data[i].call_back })
+                            else if (this.admindata === "Services")
+                                for (i = 0; i < response.data.length; i++)
+                                    this.adminservices.push({ id: response.data[i].id_, service: response.data[i].service, serviceDescription: response.data[i].service_description })
+                            else if (this.admindata === "Managers")
+                                for (i = 0; i < response.data.length; i++)
+                                    this.adminmanagers.push({ name: response.data[i].username })
+                        }
+                    })
             },
-            emitAttack() {
-                this.socketServer.emit('attack', this.nickname)
-                this.$refs["attack-button"].disabled = true;
-                this.$refs["defend-button"].disabled = true;
-                setTimeout(() => { this.$refs["attack-button"].disabled = false; this.$refs["defend-button"].disabled = false; }, 1000);
+            adminPrevious() {
+                this.adminclients = [];
+                this.adminservices = [];
+                this.adminmanagers = [];
+                this.admindata = 'Start';
             },
+            deleteClient(event) {
+                var id = parseInt(event.target.parentElement.parentElement.parentElement.childNodes[0].innerText);
+                if (confirm("Are you sure")) {
+                    var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                    instance.put('http://localhost:1337/delete', {
+                        id_: id,
+                    })
+                        .then((response) => {
+                            if (!response.data) {
+                                window.alert("Error ocured, not updated");
+                            }
+                            else {
+                                this.adminData(null, "Clients");
+                                console.log("Deleted");
+                            }
+                        })
+                }
+                else {
+                    console.log("No")
+                }
+            },
+            updateClient(event) {
+                var li = event.target.parentElement.parentElement.nextElementSibling;
+                displayStyle = getComputedStyle(li).display
+                if (displayStyle == "none")
+                    li.style.display = "flex";
+                else
+                    li.style.display = "none";
+            },
+            submitUpdate(event) {
+                var parent = event.target.parentElement.parentElement.parentElement.parentElement;
+                var id = parent.parentElement.childNodes[0].childNodes[0].innerText
+                var data = parent.childNodes;
+                //(2,4,6,8,10,12) (fio,phone,adress,job,salary,callBack)
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.put('http://localhost:1337/update/client', {
+                    id_: id,
+                    fio: data[2].childNodes[0].value,
+                    tel: data[4].childNodes[0].value,
+                    homeadress: data[6].childNodes[0].value,
+                    job: data[8].childNodes[0].value,
+                    salary: data[10].childNodes[0].value,
+                    call_back: data[12].childNodes[0].checked
+                })
+                    .then((response) => {
+                        if (!response.data) {
+                            window.alert("Error ocured, not updated");
+                        }
+                        else {
+                            this.adminData(null, "Clients");
+                            console.log("updated")
+                        }
+                    })
+            }
         },
         created: function () {
             window.onbeforeunload = () => {
                 this.socketServer.emit('disconnect');
             }
-            this.socketServer.on('health_update', (data) => {
-                console.log("Recievede update on health")
-                if (data[this.towerName] == -5000) {
-                    this.enemyTowerHealth = data[this.enemyTowerName]
-                }
-                else {
-                    this.towerDefenders = data[this.towerName + " Defenders"];
-                    this.towerHealth = data[this.towerName]
-
-                    this.enemyTowerDefenders = data[this.enemyTowerName + " Defenders"];
-                    this.enemyTowerHealth = data[this.enemyTowerName]
-                }
-            });
-
-            this.socketServer.on('health_attacked', () => {
-                console.log("Health attacked");
-                this.towerDefense -= 100;
-                if (this.towerDefense < 0) {
-                    this.towerHealth += this.towerDefense;
-                    this.towerDefense = 0;
-                }
-            });
-
-            this.socketServer.on('shield', () => {
-                console.log("Shield updated");
-                this.towerDefense += 150;
-            });
         },
         mounted: function () {
             this.isMore = true;
-            test = (event) => {
+            changeStatus = (event) => {
                 var background = event.target.style.backgroundColor;
                 if (background === "green")
                     event.target.style.backgroundColor = "red";

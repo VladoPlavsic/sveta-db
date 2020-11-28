@@ -1,6 +1,6 @@
 import psycopg2
 import yaml
-from models.models import Data, Response, ClientUpdates
+from models.models import Data, Response, ClientUpdates, Managers, Clients, Services
 
 
 class Database:
@@ -79,9 +79,62 @@ class Database:
             organised_data = Data()
         return response
 
+    def get_managers(self):
+        self.__CURSOR.execute("SELECT * FROM administrator_user_view")
+        response = []
+        manager = Managers()
+        managers = self.__CURSOR.fetchall()
+        for m in managers:
+            manager.username = m[0]
+            response.append(manager)
+            manager = Managers()
+
+        return response
+
+    def get_clients(self):
+        self.__CURSOR.execute("SELECT * FROM administrator_client_view")
+        clients = self.__CURSOR.fetchall()
+        response = []
+        client = Clients()
+        for c in clients:
+            client.id_        = c[0]
+            client.fio        = c[1]
+            client.tel        = c[2]
+            client.job        = c[3]
+            client.homeadress = c[4]
+            client.salary     = c[5]
+            client.call_back  = c[6]
+            response.append(client)
+            client = Clients()
+
+        return response
+
+    def get_services(self):
+        self.__CURSOR.execute("SELECT * FROM administrator_service_view")
+        services = self.__CURSOR.fetchall()
+        response = []
+        service = Services()
+        for s in services:
+            service.id_                 = s[0]
+            service.service             = s[1]
+            service.service_description = s[2]
+            response.append(service)
+            service = Services()
+
+        return response
+
+
+    def delete_client(self, id_):
+        try:
+            self.__CURSOR.execute(f"call delete_client({id_})")
+            self.__CONNECTION.commit()
+        except Exception as e:
+            return False
+        return True
+
 def main():
-    db = Database("vlado", "vlado")
-    db.update_client("Яковлев Матвей Михайлович", "+79685127157", "DEBIT", "no")
+    db = Database("admin", "admin")
+    db.delete_client(1)
 
 if __name__ == "__main__":
     main()

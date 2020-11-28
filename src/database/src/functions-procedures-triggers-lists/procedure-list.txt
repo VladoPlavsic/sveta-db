@@ -8,7 +8,7 @@
 	
 	insert_client(fio_p VARCHAR(100), tel_p VARCHAR(12), job_p VARCHAR(50), homeadress_p VARCHAR(50), salary_p numeric(9,2))
 
-	update_client(client_id_p INTEGER, tel_p VARCHAR(12) DEFAULT NULL, job_p VARCHAR(50) DEFAULT NULL, homeadress_p VARCHAR(50) DEFAULT NULL, salary_p 		numeric(9,2) DEFAULT NULL)
+	update_client(client_id_p INTEGER, tel_p VARCHAR(12) DEFAULT NULL, job_p VARCHAR(50) DEFAULT NULL, homeadress_p VARCHAR(50) DEFAULT NULL, salary_p 	numeric(9,2) DEFAULT NULL)
 
 	delete_client(client_id_p INTEGER)
 

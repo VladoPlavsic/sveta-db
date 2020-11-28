@@ -67,27 +67,49 @@ $$;
 
 
 /*UPDATE CLIENT*/
-CREATE OR REPLACE PROCEDURE update_client(client_id_p INTEGER, tel_p VARCHAR(12) DEFAULT NULL, job_p VARCHAR(50) DEFAULT NULL, homeadress_p VARCHAR(50) DEFAULT NULL, salary_p numeric(9,2) DEFAULT NULL)
+CREATE OR REPLACE PROCEDURE update_client(client_id_p INTEGER,fio_p VARCHAR(100) DEFAULT NULL ,tel_p VARCHAR(12) DEFAULT NULL, job_p VARCHAR(50) DEFAULT NULL, homeadress_p VARCHAR(50) DEFAULT NULL, salary_p numeric(9,2) DEFAULT NULL, call_back_p BOOLEAN DEFAULT NULL)
 LANGUAGE plpgsql
 AS $$
 BEGIN
 CASE
+WHEN fio_p IS NOT NULL
+THEN
+UPDATE clients SET fio = fio_p WHERE id = client_id_p;
+ELSE
+END CASE;
+CASE
 WHEN tel_p IS NOT NULL
 THEN
 UPDATE clients SET tel = tel_p WHERE id = client_id_p;
+ELSE
+END CASE;
+CASE
 WHEN job_p IS NOT NULL
 THEN
 UPDATE clients SET job = job_p WHERE id = client_id_p;
+ELSE
+END CASE;
+CASE
 WHEN homeadress_p IS NOT NULL
 THEN
 UPDATE clients SET homeadress = homeadress_p WHERE id = client_id_p;
+ELSE
+END CASE;
+CASE
 WHEN salary_p IS NOT NULL 
 THEN
 UPDATE clients SET salary = salary_p WHERE id = client_id_p;
 ELSE
 END CASE;
+CASE
+WHEN call_back_p IS NOT NULL 
+THEN
+UPDATE clients SET call_back = call_back_p WHERE id = client_id_p;
+ELSE
+END CASE;
 END;
 $$;
+
 
 /* DELETE CLIENT */
 CREATE OR REPLACE PROCEDURE delete_client(client_id_p INTEGER)
@@ -128,6 +150,22 @@ BEGIN
 UPDATE live SET status_id = status_id_p WHERE client_id = client_id_p AND service_id = service_id_p;
 END;
 $$;
+
+/*ADMINISTRATOR VIEW FOR CLIENTS*/
+
+CREATE OR REPLACE VIEW administrator_client_view AS
+SELECT * FROM clients ORDER BY id;
+
+
+/*LIST ALL NON SUPERUSERS*/
+
+CREATE OR REPLACE VIEW administrator_user_view AS
+SELECT usename FROM pg_catalog.pg_user WHERE usesuper = false ORDER BY usename desc;
+
+/*LIST ALL SERVICES*/
+
+CREATE OR REPLACE VIEW administrator_service_view AS
+SELECT * FROM services ORDER BY id;
 
 
 

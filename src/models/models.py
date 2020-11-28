@@ -2,8 +2,8 @@ from typing import List
 from pydantic import BaseModel
 
 class Login(BaseModel):
-    username: str
-    password: str
+    username: str = None
+    password: str = None
 
 class Data(BaseModel):
     name: str = None
@@ -29,3 +29,23 @@ class ClientUpdates(BaseModel):
     updated: List[Updates] = None
     username: str = None
     password: str = None
+
+class Managers(BaseModel):
+    username: str = None
+
+class Clients(BaseModel):
+    id_: int = None
+    fio: str = None
+    tel: str = None
+    job: str = None
+    homeadress: str = None
+    salary: str = None
+    call_back: bool = True
+
+class Services(BaseModel):
+    id_: int = None
+    service: str = None
+    service_description: str = None
+
+class ID(BaseModel):
+    id_: int = None
