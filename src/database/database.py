@@ -1,6 +1,6 @@
 import psycopg2
 import yaml
-from models.models import Data, Response, ClientUpdates, Managers, Clients, Services
+from models.models import Data, Response, ClientUpdates, Managers, Clients, Services, Login
 
 
 class Database:
@@ -129,12 +129,74 @@ class Database:
             self.__CURSOR.execute(f"call delete_client({id_})")
             self.__CONNECTION.commit()
         except Exception as e:
+            print(e)
             return False
         return True
 
+
     def update_client(self, client: Clients):
-        self.__CURSOR.execute(f"call update_client({client.id_},'{client.fio or 'NULL'}','{client.tel or 'NULL'}','{client.job or 'NULL'}','{client.homeadress or 'NULL'}',{client.salary or 'NULL'},{client.call_back})")
-        self.__CONNECTION.commit()
+        try:
+            cli = client.dict()
+            query = f"call update_client(client_id_p=>{client.id_}"
+            for c in cli.keys():
+                if(cli[c] and c != "id_" and c != "call_back" and c != "salary"):
+                    query += f",{c}_p=>'{cli[c]}'"
+                elif(cli[c] and c == "salary" or c == "call_back"):
+                    query += f",{c}_p=>{cli[c]}"
+            query += ")"
+            self.__CURSOR.execute(query)
+            self.__CONNECTION.commit()
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+    def insert_clients(self, client: Clients):
+        try:
+            self.__CURSOR.execute(f"call insert_client('{client.fio}','{client.tel}','{client.job}', '{client.homeadress}', '{client.salary}')")
+            self.__CONNECTION.commit()
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+    def delete_service(self, id_):
+        try:
+            self.__CURSOR.execute(f"call delete_service({id_})")
+            self.__CONNECTION.commit()
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+    def insert_service(self, service: Services):
+        try:
+            self.__CURSOR.execute(f"select insert_service('{service.service}','{service.service_description}')")
+            self.__CONNECTION.commit()
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+    def delete_role(self, username):
+        try:
+            self.__CURSOR.execute(f"call delete_user('{username}')")
+            self.__CONNECTION.commit()
+        except Exception as e:
+            print(e)
+            return False
+        return True
+    
+    def insert_role(self, login: Login):
+        try:
+            self.__CURSOR.execute(f"call add_user('{login.username}', '{login.password}')")
+            self.__CONNECTION.commit()
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+
 
 def main():
     db = Database("admin", "admin")

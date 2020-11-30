@@ -43,7 +43,7 @@ class Database:
         self.__CURSOR.execute(f"SELECT * FROM get_id_for_update('{clientname}', '{clientnumber}', '{servicename}', '{statusname}')")
         return self.__CURSOR.fetchone()
 
-    def update_client(self, clientname, clientnumber, servicename, statusname):
+    def update_client_live(self, clientname, clientnumber, servicename, statusname):
         data = self.__get_ids_for_update(clientname, clientnumber, servicename, statusname)
         self.__CURSOR.execute(f"call update_live_status({data[0]}, {data[1]}, {data[2]})")
         self.__CONNECTION.commit()
@@ -132,9 +132,30 @@ class Database:
             return False
         return True
 
+
+    def update_client(self, client: Clients):
+
+        cli = client.dict()
+        query = f"call update_client(client_id=>{client.id_}"
+        for c in cli.keys():
+            if(cli[c] and c != "id_" and c != "call_back" and c != "salary"):
+                query += f",{c}_p=>'{cli[c]}'"
+            elif(cli[c] and c == "salary" or c == "call_back"):
+                query += f",{c}_p=>{cli[c]}"
+        query += ")"
+        self.__CURSOR.execute(query)
+        self.__CONNECTION.commit()
+
+def string_or_null(string):
+    return string or 'NULL'
+
 def main():
     db = Database("admin", "admin")
-    db.delete_client(1)
+    client = Clients()
+    client.id_ = 1
+    client.call_back = False
+    client.fio = "Vlado"
+    db.update_client(client)
 
 if __name__ == "__main__":
     main()

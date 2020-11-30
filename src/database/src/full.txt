@@ -317,11 +317,19 @@ END;
 $$;
 
 /*CREATE USER*/
-CREATE OR REPLACE PROCEDURE add_user(username VARCHAR(50), password VARCHAR(50), g VARCHAR(50))
+CREATE OR REPLACE PROCEDURE add_user(username VARCHAR(50), password VARCHAR(50))
 LANGUAGE plpgsql
 AS $$
 BEGIN
-execute  'CREATE ROLE ' ||username|| ' WITH LOGIN PASSWORD ''' ||password|| ''' IN GROUP ' ||g;
+execute  'CREATE ROLE ' ||username|| ' WITH LOGIN PASSWORD ''' ||password|| ''' IN GROUP managers';
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE delete_user(role_name VARCHAR(100))
+LANGUAGE plpgsql
+AS $$
+BEGIN
+EXECUTE format('DROP ROLE %I', role_name);
 END;
 $$;
 

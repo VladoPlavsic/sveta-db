@@ -103,6 +103,45 @@ a {
     background-color: lightpink;
   }
 
+  .insert-list-item{
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .insert-client{
+    flex-basis: 10%; 
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .insert-client > p{
+    margin: 0;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    color: white;
+    border: 2px solid greenyellow;
+    font-weight: 700;
+  }
+  
+  .insert-client > p:hover{
+    animation: example 1s;
+    animation-fill-mode: forwards;
+  } 
+
+  @keyframes example {
+    0% {border-radius: 0px}
+    10% {border-radius: 10px}
+    20% {border-radius: 15px}
+    30% {border-radius: 20px}
+    40% {border-radius: 25px}
+    50% {border-radius: 30px}
+    60% {border-radius: 35px}
+    70% {border-radius: 40px}
+    80% {border-radius: 45px}
+    90% {border-radius: 50px}
+    100% {border-radius: 55px}
+  }
+
   .col-id{
       flex-basis: 5%;
   }
@@ -136,6 +175,22 @@ a {
     margin-top: 10px;
 }
 
+.content-insert {
+  margin-top: 10px; 
+  margin-bottom: 20px; 
+  min-height: 50px;
+  padding: 0 18px;
+  flex-basis: 100%;
+  display: none;
+  overflow: hidden;
+  background-color: rgba( 115,225,200, 0.3 )
+}
+
+.content-insert > div > input{
+  margin-top: 10px;
+}
+
+
 .update{
     background-color: #92DE34;
     color: black;
@@ -147,4 +202,60 @@ a {
     color: black;
     margin-top: 5px;
     margin-left: -10px;
+}
+
+.col-id-service{
+  flex-basis: 5%;
+}
+.col-service{
+  flex-basis: 15%;
+}
+.col-service-desc{
+  flex-basis: 70%;
+  text-align: center;
+}
+.col-insert-service{
+  flex-basis: 5%;
+}
+.col-update-service{
+  flex-basis: 5%;
+}
+
+.styled-table {
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 0.9em;
+  font-family: sans-serif;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+.styled-table thead tr {
+  background-color: #009879;
+  color: #ffffff;
+  text-align: left;
+}
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+.styled-table tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+.styled-table > tbody  {
+  background-color: #dddddd;
+}
+
+.styled-table tbody tr:last-of-type {
+  border-bottom: 2px solid #009879;
+}
+.styled-table tbody tr.active-row {
+  font-weight: bold;
+  color: #009879;
+}
+
+.table-div {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }

@@ -12,9 +12,11 @@ CREATE OR REPLACE FUNCTION on_insert_clients()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
+DECLARE 
+local_id INTEGER;
 BEGIN
-FOR i IN 1..(SELECT count(id) FROM services) LOOP
-INSERT INTO live VALUES(NEW.id, i, (SELECT id FROM statuses WHERE status LIKE 'call back'));
+FOR local_id IN SELECT id FROM services LOOP
+INSERT INTO live VALUES(NEW.id, local_id, (SELECT id FROM statuses WHERE status LIKE 'call back'));
 END LOOP;
 RETURN NEW;
 END;
@@ -277,7 +279,6 @@ SELECT status FROM statuses INNER JOIN live ON id = status_id ORDER BY client_id
 
 
 
---------------------------------------------------------------TODAYS UPDATES
 
 
 CREATE OR REPLACE VIEW administrator_client_view AS
@@ -293,3 +294,15 @@ SELECT usename FROM pg_catalog.pg_user WHERE usesuper = false ORDER BY usename d
 
 CREATE OR REPLACE VIEW administrator_service_view AS
 SELECT * FROM services ORDER BY id;
+
+
+--------------------------------------------------------------TODAYS UPDATES
+
+
+CREATE OR REPLACE PROCEDURE delete_user(role_name VARCHAR(100))
+LANGUAGE plpgsql
+AS $$
+BEGIN
+EXECUTE format('DROP ROLE %I', role_name);
+END;
+$$;

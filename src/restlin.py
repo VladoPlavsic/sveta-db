@@ -72,17 +72,49 @@ def get_services():
     response = db.get_services()
     return response
 
-@app.put("/delete")
+#CLIENT ROUTES
+@app.put("/delete/clients")
 def delete_client(id_: ID):
     db = Database(_login.username, _login.password)
     return db.delete_client(id_.id_)
 
-@app.put("/update/client")
+@app.put("/update/clients")
 def update_client(client: Clients):
     db = Database(_login.username, _login.password)
-    db.update_client(client)
-    print(f"Got update request with {client}")
-    return True
+    return db.update_client(client)
+
+@app.put("/insert/clients")
+def insert_client(client: Clients):
+    db = Database(_login.username, _login.password)
+    print("RECIVED CLIENT WITH ")
+    print(client)
+    return db.insert_clients(client)
+
+
+#SERVICE ROUTES
+@app.put("/delete/services")
+def delete_client(id_: ID):
+    db = Database(_login.username, _login.password)
+    return db.delete_service(id_.id_)
+
+@app.put("/insert/services")
+def insert_client(service: Services):
+    db = Database(_login.username, _login.password)
+    return db.insert_service(service)
+
+
+#ROLE ROUTES
+@app.put("/delete/role")
+def delete_role(login: Login):
+    db = Database(_login.username, _login.password)
+    return db.delete_role(login.username)
+
+@app.put("/insert/role")
+def insert_role(login: Login):
+    db = Database(_login.username, _login.password)
+    return db.insert_role(login)
+
+
 
 def start_unicorn(app, host, port):
     uvicorn.run(app, host=host, port=port, log_level='error')
