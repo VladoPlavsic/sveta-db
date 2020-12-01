@@ -1,3 +1,6 @@
+/*USER INDEPENDANT*/
+	is_super() RETURNS BOOLEAN
+
 /*ALL*/
     get_id_for_update(client_name VARCHAR(100), client_number VARCHAR(12), service_name VARCHAR(50), status_name VARCHAR(20))
     RETURNS TABLE (

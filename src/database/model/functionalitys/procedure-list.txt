@@ -20,6 +20,8 @@
 
 	/*GROUPS AND ROLES*/
 
-	add_group(group_name VARCHAR(50))
+	add_group(group_name VARCHAR(50)) /*NOT USED IN SIMULATION*/
 
 	add_user(username VARCHAR(50), password VARCHAR(50), group_p VARCHAR(50))
+
+	delete_user(role_name VARCHAR(100))

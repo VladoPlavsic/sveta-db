@@ -27,8 +27,6 @@ class ClientUpdates(BaseModel):
     clientname: str = None
     clientnumber: str = None
     updated: List[Updates] = None
-    username: str = None
-    password: str = None
 
 class Managers(BaseModel):
     username: str = None

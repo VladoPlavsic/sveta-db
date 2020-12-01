@@ -204,7 +204,7 @@ BEGIN
 SELECT INTO client clients.id FROM clients WHERE clients.fio LIKE client_name AND clients.tel LIKE client_number;
 SELECT INTO service services.id FROM services WHERE services.service LIKE service_name;
 SELECT INTO status statuses.id FROM statuses WHERE statuses.status LIKE status_name;
-RETURN QUERY SELECt client, service, status;
+RETURN QUERY SELECT client, service, status;
 END;
 $$;
 
@@ -222,7 +222,6 @@ CASE
 (SELECT count(client_id) FROM live WHERE client_id = NEW.client_id AND status_id = (SELECT id FROM statuses WHERE status LIKE 'call back'))
 WHEN 0 THEN
 UPDATE clients SET call_back = false WHERE id = NEW.client_id;
-DELETE FROM live WHERE client_id = NEW.client_id;
 RETURN NEW;
 ELSE
 UPDATE clients SET call_back = true WHERE id = NEW.client_id;
@@ -241,14 +240,13 @@ CREATE TRIGGER on_update_status_live_trigger AFTER UPDATE OF status_id ON live F
 /* BULK INSERT DUMMY DATA FROM FILES  (CLIENTS LAST)*/
 
 /* BULK INSERT STATUSES*/
-\copy statuses (status) FROM 'C:\dev\BD-5th-sem\src\database\src\data\dummy-data\statuses.txt' WITH CSV DELIMITER ',' ENCODING 'UTF-8';
+\copy statuses (status) FROM 'C:\dev\BD-5th-sem\src\database\model\data\dummy-data\statuses.txt' WITH CSV DELIMITER ',' ENCODING 'UTF-8';
 
 /*BULK INSERT SERVICES*/
-\copy services (service, service_description) FROM 'C:\dev\BD-5th-sem\src\database\src\data\dummy-data\services.txt' WITH CSV DELIMITER ',' ENCODING 'UTF-8';
+\copy services (service, service_description) FROM 'C:\dev\BD-5th-sem\src\database\model\data\dummy-data\services.txt' WITH CSV DELIMITER ',' ENCODING 'UTF-8';
 
 /*BULK INSERT CLIENTS*/
-\copy clients (fio,tel,job,homeadress,salary,call_back) FROM 'C:\dev\BD-5th-sem\src\database\src\data\dummy-data\clients.txt' WITH CSV DELIMITER ',' HEADER ENCODING 'UTF8';
-
+\copy clients (fio,tel,job,homeadress,salary,call_back) FROM 'C:\dev\BD-5th-sem\src\database\model\data\dummy-data\clients.txt' WITH CSV DELIMITER ',' HEADER ENCODING 'UTF8';
 
 
 
@@ -263,6 +261,7 @@ BEGIN
 FOR local_id IN (SELECT id FROM clients) LOOP
 INSERT INTO live VALUES(local_id, NEW.id, 2);
 END LOOP;
+UPDATE clients SET call_back = true;
 RETURN NEW;
 END;
 $$;
@@ -299,7 +298,7 @@ CREATE OR REPLACE VIEW managers_view AS
 SELECT * FROM managers_view_function();
 
 CREATE OR REPLACE VIEW managers_live_view AS
-SELECT status FROM statuses INNER JOIN live ON id = status_id ORDER BY client_id, service_id;
+SELECT status FROM statuses INNER JOIN live ON id = status_id and client_id NOT IN (SELECT id FROM clients WHERE call_back = false) ORDER BY client_id, service_id;
 
 /*CREATE PROCEDURES FOR USER CREATION*/
 
@@ -334,9 +333,9 @@ END;
 $$;
 
 /*CREATE 'MANAGERS' GROUP*/ 
- call add_group('managers');
+call add_group('managers');
 
 /*CREATE ONE USER*/
-call add_user('vlado','vlado','managers');
+call add_user('vlado','vlado');
 
-call add_user('pero','pero','managers');
+call add_user('pero','pero');

@@ -313,6 +313,7 @@
             admindata: 'Start'
         },
         methods: {
+            //Log In
             submitNick() {
                 var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
                 instance.post('http://localhost:1337/user', {
@@ -350,6 +351,7 @@
                         app.indexExpanded = -1;
                     })
             },
+            //Manager hide/unhide more options
             more(event) {
                 this.extracted = []
                 var parentSender = event.target.parentElement
@@ -368,12 +370,14 @@
                 }
                 statuses.forEach(element => this.extracted.push(element.split('.')[0].replace("%20", " ")));
             },
+            //Render status images
             getStatus() {
                 if (this.index === this.statuses.length - 1)
                     this.index = -1;
                 this.index++;
                 return this.imagePath + this.statuses[this.index] + ".png";
             },
+            //Render expanded options for managers
             getStatusExpanded() {
                 if (this.indexExpanded === this.statuses.length - 1)
                     this.indexExpanded = -1;
@@ -385,6 +389,7 @@
                 else
                     return '<input type = "checkbox" ><span onclick="changeStatus(event)" class="slider round"></span>';
             },
+            //Update live with new statuses
             submitChanges(event) {
                 var parent = event.target.parentElement.parentElement;
                 var parentNodes = parent.childNodes
@@ -424,8 +429,6 @@
                     clientname: data.clientname,
                     clientnumber: data.clientnumber,
                     updated: data.updated,
-                    username: this.username,
-                    password: this.password
                 })
                     .then((response) => {
                         if (response.data.error) {
@@ -442,6 +445,7 @@
                         }
                     })
             },
+            //Get data for admins
             adminData(event, admindata) {
                 this.adminclients = [];
                 this.adminservices = [];
@@ -469,12 +473,14 @@
                         }
                     })
             },
+            //Return to start menu (admin)
             adminPrevious() {
                 this.adminclients = [];
                 this.adminservices = [];
                 this.adminmanagers = [];
                 this.admindata = 'Start';
             },
+            //Delete client or service
             deleteClient(event) {
                 var id = parseInt(event.target.parentElement.parentElement.parentElement.childNodes[0].innerText);
                 if (confirm("Are you sure")) {
@@ -496,6 +502,7 @@
                     console.log("No")
                 }
             },
+            //Update client (expand)
             updateClient(event) {
                 var li = event.target.parentElement.parentElement.nextElementSibling;
                 displayStyle = getComputedStyle(li).display
@@ -504,6 +511,7 @@
                 else
                     li.style.display = "none";
             },
+            //Update client (submit)
             submitUpdate(event) {
                 var parent = event.target.parentElement.parentElement.parentElement.parentElement;
                 var id = parent.parentElement.childNodes[0].childNodes[0].innerText
@@ -529,6 +537,7 @@
                         }
                     })
             },
+            //Insert client (expand)
             insertClient(event) {
                 var next = event.target.parentElement.parentElement.nextElementSibling
                 displayStyle = getComputedStyle(next).display
@@ -537,6 +546,7 @@
                 else
                     next.style.display = "none";
             },
+            //Insert client (submit)
             submitClient(event) {
                 var next = event.target.parentElement.parentElement.parentElement.parentElement
                 var arr = [2, 4, 6, 8, 10]
@@ -569,6 +579,7 @@
                         }
                     })
             },
+            //Insert service (submit)
             submitService(event) {
                 var next = event.target.parentElement.parentElement.parentElement.parentElement
                 var arr = [2, 4]
@@ -596,6 +607,7 @@
                     })
 
             },
+            //Add role
             addRole(event) {
                 var row = event.target.parentElement.parentElement;
                 if (row.childNodes[0].childNodes[0].value == "" || row.childNodes[2].childNodes[0].value == "") {
@@ -620,6 +632,7 @@
                     })
 
             },
+            //Delete role
             deleteRole(event) {
 
                 var row = event.target.parentElement.parentElement
