@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database.database import Database
-from  models.models import Login, Response, Data, ClientUpdates, Managers, Clients, Services, ID
+from  models.models import Login, Response, ClientUpdates, Managers, Clients, Services, ID
 from logger.logger import Logger
 import yaml
 
@@ -15,7 +15,7 @@ class Restlin:
         self.__APP = FastAPI()
         self.__HOST = ''
         self.__PORT = ''
-        self.__LOGIN = Login()
+        self.__LOGIN = Login(username='', password='')
         self.__APP.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
@@ -61,7 +61,6 @@ if __name__ == "__main__":
 # POST ROUTE FOR CREATING A USER
 @app.post("/user")
 def log_in(login: Login):
-
     restlin.set_login(login)
     response = Response()
 

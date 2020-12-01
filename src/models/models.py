@@ -1,49 +1,49 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 class Login(BaseModel):
-    username: str = None
-    password: str = None
+    username: str
+    password: Optional[str]
 
 class Data(BaseModel):
-    name: str = None
-    phone: str = None
-    adress: str = None
-    salary: float = None
-    statuses: List[int] = None
+    name: Optional[str]
+    phone: Optional[str]
+    adress: Optional[str]
+    salary: Optional[float]
+    statuses: Optional[List[int]]
 
 class Response(BaseModel):
     error: bool = False
     admin: bool = False
-    services: List[str] = None
-    data: List[Data] = None
+    services: Optional[List[str]]
+    data: Optional[List[Data]]
 
 class Updates(BaseModel):
-    update: bool = False
-    service: str = None
-    status: str = None
+    update: Optional[bool] = False
+    service: Optional[str]
+    status: Optional[str]
 
 class ClientUpdates(BaseModel):
-    clientname: str = None
-    clientnumber: str = None
-    updated: List[Updates] = None
+    clientname: Optional[str]
+    clientnumber: Optional[str]
+    updated: List[Updates]
 
 class Managers(BaseModel):
-    username: str = None
+    username: Optional[str]
 
 class Clients(BaseModel):
-    id_: int = None
-    fio: str = None
-    tel: str = None
-    job: str = None
-    homeadress: str = None
-    salary: str = None
-    call_back: bool = True
+    id_: Optional[int]
+    fio: Optional[str]
+    tel: Optional[str]
+    job: Optional[str]
+    homeadress: Optional[str]
+    salary: Optional[str]
+    call_back: bool = False
 
 class Services(BaseModel):
-    id_: int = None
-    service: str = None
-    service_description: str = None
+    id_: Optional[int]
+    service: Optional[str]
+    service_description: Optional[str]
 
 class ID(BaseModel):
-    id_: int = None
+    id_: Optional[int]

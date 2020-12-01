@@ -3,7 +3,7 @@ CREATE TABLE public.live
     client_id integer NOT NULL,
     service_id integer NOT NULL,
     status_id integer NOT NULL,
-    CONSTRAINT live_client_id_service_id_status_id_key UNIQUE (client_id, service_id, status_id),
+    CONSTRAINT live_client_id_service_id_status_id_key UNIQUE (client_id, service_id),
     CONSTRAINT fk_client FOREIGN KEY (client_id)
         REFERENCES public.clients (id) MATCH SIMPLE
         ON UPDATE NO ACTION

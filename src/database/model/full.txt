@@ -39,7 +39,7 @@ CREATE TABLE public.live
     client_id integer NOT NULL,
     service_id integer NOT NULL,
     status_id integer NOT NULL,
-    CONSTRAINT live_client_id_service_id_status_id_key UNIQUE (client_id, service_id, status_id),
+    CONSTRAINT live_client_id_service_id_status_id_key UNIQUE (client_id, service_id),
     CONSTRAINT fk_client FOREIGN KEY (client_id)
         REFERENCES public.clients (id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -143,7 +143,7 @@ END;
 $$;
 
 /*UPDATE LIVE*/
-CREATE  OR REPLACE PROCEDURE update_live_status(client_id_p INTEGER, service_id_p INTEGER, status_id_p INTEGER)
+CREATE OR REPLACE PROCEDURE update_live_status(client_id_p INTEGER, service_id_p INTEGER, status_id_p INTEGER)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -176,9 +176,11 @@ CREATE OR REPLACE FUNCTION on_insert_clients()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    id_ INTEGER;
 BEGIN
-FOR i IN 1..(SELECT count(id) FROM services) LOOP
-INSERT INTO live VALUES(NEW.id, i, (SELECT id FROM statuses WHERE status LIKE 'call back'));
+FOR id_ IN (SELECT id FROM services) LOOP
+INSERT INTO live VALUES(NEW.id, id_, (SELECT id FROM statuses WHERE status LIKE 'call back'));
 END LOOP;
 RETURN NEW;
 END;
@@ -235,8 +237,6 @@ CREATE TRIGGER on_update_status_live_trigger AFTER UPDATE OF status_id ON live F
 
 
 
-
-
 /* BULK INSERT DUMMY DATA FROM FILES  (CLIENTS LAST)*/
 
 /* BULK INSERT STATUSES*/
@@ -268,7 +268,7 @@ $$;
 
 CREATE TRIGGER on_insert_services_trigger AFTER INSERT ON services FOR EACH ROW EXECUTE FUNCTION on_insert_services();
 
-/*CREATE FUNCTION FOR CHECKIN SUPER*/
+/*CREATE FUNCTION FOR CHECKING SUPER*/
 CREATE OR REPLACE FUNCTION is_super() RETURNS BOOLEAN
 LANGUAGE plpgsql
 AS $$
@@ -324,6 +324,7 @@ execute  'CREATE ROLE ' ||username|| ' WITH LOGIN PASSWORD ''' ||password|| ''' 
 END;
 $$;
 
+/*DELET USER*/
 CREATE OR REPLACE PROCEDURE delete_user(role_name VARCHAR(100))
 LANGUAGE plpgsql
 AS $$
