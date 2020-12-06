@@ -14,4 +14,3 @@ There is not much configuration to be done, hosts and ports for database and res
 Logging done using Pythons logging. Logs can be found src/logger/logs
 
 Project is deployed to docker.
-For usage, download docker-compose.yaml and build it.
