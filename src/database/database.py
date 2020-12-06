@@ -17,13 +17,16 @@ class Database:
         self.__get_config()
 
         # CREATE CONNECTION
-        self.__CONNECTION = psycopg2.connect(
-            host=self.__HOST,
-            port=self.__PORT,
-            database=self.__DATABASE,
-            user=username,
-            password=password
-        )
+        try:
+            self.__CONNECTION = psycopg2.connect(
+                host=self.__HOST,
+                port=self.__PORT,
+                database=self.__DATABASE,
+                user=username,
+                password=password
+            )
+        except Exception as e:
+            print(f"Got exception trying to connect:\n {e}")
 
         # CREATE CURSOR
         self.__CURSOR = self.__CONNECTION.cursor()

@@ -1,5 +1,6 @@
+
 /* CREATE DATABASE */
-CREATE DATABASE school WITH OWNER = admin ENCODING = 'UTF8' LC_CTYPE = 'ru_RU.UTF8' LC_COLLATE = 'ru_RU.UTF8' TABLESPACE = pg_default  CONNECTION LIMIT = -1 TEMPLATE template0;
+CREATE DATABASE school WITH OWNER = admin ENCODING = 'UTF8' LC_CTYPE = 'ru_RU.utf8' LC_COLLATE = 'ru_RU.utf8' TABLESPACE = pg_default  CONNECTION LIMIT = -1 TEMPLATE template0;
 
 \c school
 
@@ -236,20 +237,6 @@ $$;
 CREATE TRIGGER on_update_status_live_trigger AFTER UPDATE OF status_id ON live FOR EACH ROW EXECUTE FUNCTION on_update_status_live();
 
 
-
-/* BULK INSERT DUMMY DATA FROM FILES  (CLIENTS LAST)*/
-
-/* BULK INSERT STATUSES*/
-\copy statuses (status) FROM 'C:\dev\BD-5th-sem\src\database\model\data\dummy-data\statuses.txt' WITH CSV DELIMITER ',' ENCODING 'UTF-8';
-
-/*BULK INSERT SERVICES*/
-\copy services (service, service_description) FROM 'C:\dev\BD-5th-sem\src\database\model\data\dummy-data\services.txt' WITH CSV DELIMITER ',' ENCODING 'UTF-8';
-
-/*BULK INSERT CLIENTS*/
-\copy clients (fio,tel,job,homeadress,salary,call_back) FROM 'C:\dev\BD-5th-sem\src\database\model\data\dummy-data\clients.txt' WITH CSV DELIMITER ',' HEADER ENCODING 'UTF8';
-
-
-
 /*CREATE TRIGGER ON SERVICE INSERTATION*/
 CREATE  OR REPLACE FUNCTION on_insert_services()
 RETURNS TRIGGER
@@ -332,6 +319,18 @@ BEGIN
 EXECUTE format('DROP ROLE %I', role_name);
 END;
 $$;
+
+/* BULK INSERT DUMMY DATA FROM FILES  (CLIENTS LAST)*/
+
+/* BULK INSERT STATUSES*/
+\copy statuses (status) FROM '/dummy-data/statuses.csv' WITH CSV DELIMITER ',' ENCODING 'UTF-8';
+
+/*BULK INSERT SERVICES*/
+\copy services (service, service_description) FROM '/dummy-data/services.csv' WITH CSV DELIMITER ',' ENCODING 'UTF-8';
+
+/*BULK INSERT CLIENTS*/
+\copy clients (fio,tel,job,homeadress,salary,call_back) FROM '/dummy-data/clients.csv' WITH CSV DELIMITER ',' HEADER ENCODING 'UTF8';
+
 
 /*CREATE 'MANAGERS' GROUP*/ 
 call add_group('managers');

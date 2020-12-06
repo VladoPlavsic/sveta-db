@@ -307,3 +307,7 @@ INFO:root:Established new connection to database by admin.
 INFO:root:Client  data updated by: admin
 INFO:root:Established new connection to database by admin.
 INFO:root:Established new connection to database by admin.
+ERROR:root:Exception raised in post route /user: 'Database' object has no attribute '_Database__CONNECTION'
+INFO:root:User login: vlado
+INFO:root:Established new connection to database by vlado.
+INFO:root:User login: vlado
