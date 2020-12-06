@@ -12,3 +12,6 @@ Communication between two servers is done exclusivly via API.
 There is not much configuration to be done, hosts and ports for database and rest API can be found in config/config.config
 
 Logging done using Pythons logging. Logs can be found src/logger/logs
+
+Project is deployed to docker.
+For usage, download docker-compose.yaml and build it.
