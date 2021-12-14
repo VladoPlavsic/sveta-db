@@ -2,10 +2,9 @@ import logging
 
 
 class Logger:
-
     def __init__(self, filename):
         logging.basicConfig(
-            filename=f"logger\logs\{filename}", level=logging.INFO)
+            filename="", level=logging.INFO)
 
     def log_info(self, message):
         logging.info(message)
@@ -18,7 +17,6 @@ class Logger:
 
 def main():
     logger = Logger("test")
-    logger.log_debug("DEBUG")
     logger.log_info("INFO")
     logger.log_warning("WARNING")
     logger.log_error("ERROR")

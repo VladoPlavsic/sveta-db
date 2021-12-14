@@ -1,12 +1,20 @@
-version: "3.8"
+version: "3.3"
    
 services:
   http:
-    image: vladoplavsic/http
+    volumes:
+      - ./http/src/:/src/
+    build: 
+      context: http
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    command: bash -c "cd /src && python3 -m http.server 8000"
+    
   db:
-    image: vladoplavsic/postgres
+    build: 
+      context: postgres
+      dockerfile: Dockerfile
     environment:
       - POSTGRES_DB=admin
       - POSTGRES_USER=admin
@@ -14,7 +22,11 @@ services:
     ports:
       - "5432:5432"
   web:
-    image: vladoplavsic/restlin
+    volumes:
+      - ./restlin/src/:/code/src/
+    build:
+      context: restlin
+      dockerfile: Dockerfile
     ports:
       - "1337:1337"
     depends_on:

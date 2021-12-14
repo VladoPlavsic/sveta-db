@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700&display=swap" rel="stylesheet">
+    <link href="styles/main.css" rel="stylesheet">
+    <link href="styles/login-form.css" rel="stylesheet">
+    <link href="styles/tables.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <button v-if="loggedIn" class="cybr-btn" @click="logOut"> 
+            Выйти<span aria-hidden>_</span>
+            <span aria-hidden class="cybr-btn__glitch">Выйти</span>
+        </button>
+        
+        <div v-if="loggedIn" class="logged-in">
+            <div v-if="showMainScreen" class="main-screen">
+                <button v-if="admin" class="cybr-btn blue" @click="goBackToAdminMainScreen">
+                    Назад<span aria-hidden>_</span>
+                    <span aria-hidden class="cybr-btn__glitch">Назад</span>
+                </button>
+                <p>Choose table</p>
+                <a href="#" @click="showDrivers">Drivers</a>
+                <a href="#" @click="showVehicles">Vehicles</a>
+                <a href="#" @click="showDrives">Drives</a>
+                <a v-if="admin" href="#" @click="showManagers">Managers</a>
+            </div>
+
+            <div v-if="doShowDrivers" class="center-table-div">
+                <button class="cybr-btn" @click="goToMainScreen"> 
+                    Назад<span aria-hidden>_</span>
+                    <span aria-hidden class="cybr-btn__glitch">Назад</span>
+                </button>
+                <div class="table_input_group">
+                    <br>
+                    <table class="rtable">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>ФИО</th>
+                            <th>Права</td>
+                            <th>Накопление</th>
+                            <th>Статус</th>
+                            <th>Удалить</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(driver,i) in driversData" :key="i">
+                                <td>{{ driver.id }}</td> 
+                                <td>{{ driver.fio }}</td>  
+                                <td>{{ driver.driving_licence }}</td>  
+                                <td>{{ driver.earnings }}</td>  
+                                <td>{{ driver.status }}</td>  
+                                <td><img src="img/trahs.svg" @click="deleteDriver(driver.id)"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                    <br>
+                    <br>
+                    <form name="addDriverForm">
+                        <div class="form__group field">
+                            <input placeholder="ФИО" name="fio" class="form__field"/>
+                            <label for="name" class="form__label">ФИО</label>
+                        </div>
+                        <div class="form__group field">
+                            <input placeholder="Права" name="driving_licence" class="form__field"/>
+                            <label for="name" class="form__label">Права</label>
+                        </div>
+                    </form>
+                    <button type="button" style="display: none;" class="cybr-btn blue" @click="addDriver">
+                        Добавить<span aria-hidden>_</span>
+                        <span aria-hidden class="cybr-btn__glitch">Добавить</span>
+                      </button>
+                    <button type="button" class="cybr-btn blue" @click="addDriver">
+                        Добавить<span aria-hidden>_</span>
+                        <span aria-hidden class="cybr-btn__glitch">Добавить</span>
+                    </button>
+                </div>
+            </div>
+
+
+            <div v-if="doShowVehicles" class="center-table-div">
+                <button class="cybr-btn" @click="goToMainScreen"> 
+                    Назад<span aria-hidden>_</span>
+                    <span aria-hidden class="cybr-btn__glitch">Назад</span>
+                </button>
+                <div class="table_input_group">
+                    <br>
+                    <br>
+                    <table class="rtable">
+                        <caption>транспортные средства</caption>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Марка</th>
+                            <th>Грузоподёмность</td>
+                            <th>Статус</th>
+                            <th>ID водителя</th>
+                            <th>Удалить</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(vehicle,i) in vehiclesData" :key="i">
+                                <td>{{ vehicle.id }}</td> 
+                                <td>{{ vehicle.mark }}</td>  
+                                <td>{{ vehicle.carry_capacity }}</td>  
+                                <td>{{ vehicle.status }}</td>  
+                                <td>{{ vehicle.driver_id }}</td>  
+                                <td><img src="img/trahs.svg" @click="deleteVehicle(vehicle.id)"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                    <br>
+                    <br>
+                    <div style="display: flex; flex-direction: column;">
+                        <form name="addVehiclesForm">
+                            <div class="form__group field">
+                                <input placeholder="Марка" name="mark" class="form__field"/>
+                                <label for="name" class="form__label">Марка</label>
+                            </div>
+                            <div class="form__group field">
+                                <input placeholder="Грузоподёмность" name="carry_capacity" class="form__field"/>
+                                <label for="name" class="form__label">Грузоподёмность</label>
+                            </div>
+                            <div class="box">
+                                <select name="driver_id">
+                                    <option v-for="(driver, i) in driversData" :key="i" :value="driver.id">{{driver.fio}}</option>
+                                </select>
+                            </div>
+                            <br>
+                        </form>
+                        <button type="button" style="display: none;" class="cybr-btn blue" @click="addVehicle">
+                            Добавить<span aria-hidden>_</span>
+                            <span aria-hidden class="cybr-btn__glitch">Добавить</span>
+                        </button>
+                        <button type="button" class="cybr-btn blue" @click="addVehicle">
+                            Добавить<span aria-hidden>_</span>
+                            <span aria-hidden class="cybr-btn__glitch">Добавить</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+
+            <div v-if="doShowDrives" class="center-table-div">
+                <button class="cybr-btn" @click="goToMainScreen"> 
+                    Назад<span aria-hidden>_</span>
+                    <span aria-hidden class="cybr-btn__glitch">Назад</span>
+                </button>
+                <div class="table_input_group">
+                    <table class="rtable">
+                        <caption>Новые</caption>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>ID водителя</th>
+                            <th>ID транспортного средства</td>
+                            <th>Масса груза</th>
+                            <th>Дестинация</th>
+                            <th>Расстояние</th>
+                            <th>Цена</th>
+                            <th>Активировать</th>
+                            <th>Удалить</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(drive,i) in drivesData.upcoming" :key="i">
+                                <td>{{ drive.id }}</td> 
+                                <td>{{ drive.driver_id }}</td>  
+                                <td>{{ drive.vehicles_id }}</td>  
+                                <td>{{ drive.cargo_weight }}</td>  
+                                <td>{{ drive.destination }}</td>
+                                <td>{{ drive.destination_distance }}</td>  
+                                <td>{{ drive.price }}</td>  
+                                <td><img src="img/trahs.svg" @click="activateDrive(drive.id)"></td>
+                                <td><img src="img/trahs.svg" @click="deleteDrive(drive.id)"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                    <br>
+                    <br>
+                    <div style="display: flex; flex-direction: column;">
+                        <form name="addDriveForm">
+                            <div class="box">
+                                <select name="driver_id">
+                                    <option v-for="(driver, i) in driversData" :key="i" :value="driver.id">{{driver.fio}}</option>
+                                </select>
+                            </div>
+                            <br>
+                            <div class="box">
+                                <select name="vehicles_id">
+                                    <option v-for="(vehicle, i) in vehiclesData" :key="i" :value="vehicle.id">{{vehicle.mark}}</option>
+                                </select>
+                            </div>
+                            <div class="form__group field">
+                                <input placeholder="Масса" name="cargo_weight" class="form__field"/>
+                                <label for="name" class="form__label">Масса</label>
+                            </div>
+                            <div class="form__group field">
+                                <input placeholder="Дестинация" name="destination" class="form__field"/>
+                                <label for="name" class="form__label">Дестинация</label>
+                            </div>
+                            <div class="form__group field">
+                                <input placeholder="Расстояние" name="destination_distance" class="form__field"/>
+                                <label for="name" class="form__label">Расстояние</label>
+                            </div>
+                            <div class="form__group field">
+                                <input placeholder="Цена" name="price" class="form__field"/>
+                                <label for="name" class="form__label">Цена</label>
+                            </div>
+                        </form>
+                        <button type="button" style="display: none;" class="cybr-btn blue" @click="addDrive">
+                            Добавить<span aria-hidden>_</span>
+                            <span aria-hidden class="cybr-btn__glitch">Добавить</span>
+                        </button>
+                        <button type="button" class="cybr-btn blue" @click="addDrive">
+                            Добавить<span aria-hidden>_</span>
+                            <span aria-hidden class="cybr-btn__glitch">Добавить</span>
+                        </button>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <br>
+                <table class="rtable">
+                    <caption>Активные</caption>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ID водителя</th>
+                        <th>ID транспортного средства</td>
+                        <th>Масса груза</th>
+                        <th>Дестинация</th>
+                        <th>Расстояние</th>
+                        <th>Цена</th>
+                        <th>Закончить</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(drive,i) in drivesData.active" :key="i">
+                            <td>{{ drive.id }}</td> 
+                            <td>{{ drive.driver_id }}</td>  
+                            <td>{{ drive.vehicles_id }}</td>  
+                            <td>{{ drive.cargo_weight }}</td>  
+                            <td>{{ drive.destination }}</td>
+                            <td>{{ drive.destination_distance }}</td>  
+                            <td>{{ drive.price }}</td>  
+                            <td><img src="img/trahs.svg" @click="finishDrive(drive.id)"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br>
+                <br>
+                <br>
+                <table class="rtable">
+                    <caption>Законченые</caption>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ID водителя</th>
+                        <th>ID транспортного средства</td>
+                        <th>Масса груза</th>
+                        <th>Дестинация</th>
+                        <th>Расстояние</th>
+                        <th>Цена</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(drive,i) in drivesData.history" :key="i">
+                            <td>{{ drive.id }}</td> 
+                            <td>{{ drive.driver_id }}</td>  
+                            <td>{{ drive.vehicles_id }}</td>  
+                            <td>{{ drive.cargo_weight }}</td>  
+                            <td>{{ drive.destination }}</td>
+                            <td>{{ drive.destination_distance }}</td>  
+                            <td>{{ drive.price }}</td>  
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div v-if="doShowManagers" class="center-table-div">
+                <button class="cybr-btn" @click="goToMainScreen"> 
+                    Назад<span aria-hidden>_</span>
+                    <span aria-hidden class="cybr-btn__glitch">Назад</span>
+                </button>
+                <br>
+                <div class="table_input_group">
+                    <table class="rtable">
+                        <thead>
+                        <tr>
+                            <th>ФИО</th>
+                            <th>OID</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(manager,i) in managersData" :key="i">
+                                <td>{{ manager.name }}</td>  
+                                <td>{{ manager.oid }}</td>  
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                    <br>
+                    <br>
+                    <div style="display: flex; flex-direction: column;">
+                        <form name="addManagerForm">
+                            <div class="form__group field">
+                                <input placeholder="ФИО" name="name" class="form__field"/>
+                                <label for="name" class="form__label">ФИО</label>
+                            </div>
+                            <div class="form__group field">
+                                <input placeholder="Пароль" name="password" class="form__field"/>
+                                <label for="name" class="form__label">Пароль</label>
+                            </div>
+                        </form>
+                        <button type="button" style="display: none;" class="cybr-btn blue" @click="addManager">
+                            Добавить<span aria-hidden>_</span>
+                            <span aria-hidden class="cybr-btn__glitch">Добавить</span>
+                        </button>
+                        <button type="button" class="cybr-btn blue" @click="addManager">
+                            Добавить<span aria-hidden>_</span>
+                            <span aria-hidden class="cybr-btn__glitch">Добавить</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <div v-if="admin">
+                <div v-if="showAdminMainScreen" class="admin-main-screen">
+                    <p>Choose branch</p>
+                    <a href="#" @click="showBranch1">Branch1</a>
+                    <a href="#" @click="showBranch2">Branch2</a>
+                    <a href="#" @click="showBranch3">Branch3</a>
+                </div>
+            </div>
+        </div>
+
+        <div v-else class="login">
+            <form>
+                <h3> 
+                    <div id="login-informations">
+                        <span v-for="item in loginInformations">
+                            <span v-html="item"></span>
+                        </span>
+                    </div>
+                </h3>
+        
+                <label for="username">Username</label>
+                <input v-model="username" type="text" id="username" placeholder="Username"><br>
+
+                <label for="password">Password</label>
+                <input v-model="password" type="password" id="password" placeholder="Password"><br>
+                <button style="display: none;" class="cybr-btn blue" @click="logIn">
+                    Войти<span aria-hidden>_</span>
+                    <span aria-hidden class="cybr-btn__glitch">Войти</span>
+                </button>
+                <button type="button" class="cybr-btn blue" @click="logIn">
+                    Войти<span aria-hidden>_</span>
+                    <span aria-hidden class="cybr-btn__glitch">Войти</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            admin: false,
+            manager: false,
+            loggedIn: false,
+            branch: 0,
+            loginInformations: ['<p>LogIn<p>'],
+            username: '',
+            password: '',
+            imagePath: '/img/',
+            doShowDrivers: false,
+            doShowVehicles: false,
+            doShowDrives: false,
+            showMainScreen: false,
+            showAdminMainScreen: false,
+            doShowManagers: false,
+            driversData: [],
+            vehiclesData: [],
+            drivesData: [],
+            managersData: [],
+        },
+        methods: {
+            //Log In
+            logIn() {
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.post('http://localhost:1337/user', {
+                    username: this.username,
+                    password: this.password
+                })
+                    .then((response) => {
+                        if (response.data.error) {
+                            old = this.loginInformations.pop(1);
+                            this.loginInformations.push('<p style="color: red">Incorrect username<br>or passwrod!<p>')
+                            setTimeout(() => { this.loginInformations.pop(1); this.loginInformations.push(old); }, 2000);
+                            return;
+                        }
+
+                        if (response.data.admin) {
+                            this.admin = true;
+                            this.showAdminMainScreen = true;
+                            this.showMainScreen = false;
+                        }
+                        else { 
+                            this.manager = true;
+                            this.branch = parseInt(response.data.branch_id[response.data.branch_id.length - 1])
+                            this.showAdminMainScreen = false;
+                            this.showMainScreen = true;
+                        }
+
+                        console.log(this.branch);
+                        this.loggedIn = true;
+                    })
+            },
+            goToMainScreen(){
+                this.doShowDrivers = false;
+                this.doShowVehicles = false;
+                this.doShowDrives = false;
+                this.doShowManagers = false;
+                this.showMainScreen = true;
+            },
+            logOut(){
+                this.loggedIn = false;
+                this.admin = false;
+                this.doShowManagers = false;
+                this.doShowDrivers = false;
+                this.doShowDrives = false;
+                this.doShowVehicles = false;
+                this.showAdminMainScreen = false;
+                this.showMainScreen = false;
+            },
+            showBranch1() {
+                this.branch = 1;
+                this.showAdminMainScreen = false;
+                this.showMainScreen = true;
+            },
+            showBranch2() {
+                this.branch = 2;
+                this.showAdminMainScreen = false;
+                this.showMainScreen = true;
+            },
+            showBranch3() {
+                this.branch = 3;
+                this.showAdminMainScreen = false;
+                this.showMainScreen = true;
+            },
+            getDrivers(){
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.get('http://localhost:1337/drivers?branch_id=' + this.branch)
+                    .then((response) => {
+                        this.driversData = response.data;
+                    })
+            },
+            getVehicles(){
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.get('http://localhost:1337/vehicles?branch_id=' + this.branch)
+                    .then((response) => {
+                        this.vehiclesData = response.data;
+                    })
+            },
+            getDrives(){
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.get('http://localhost:1337/drives?branch_id=' + this.branch)
+                    .then((response) => {
+                        this.drivesData = response.data;
+                    })
+            },
+            getManagers(){
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.get('http://localhost:1337/managers?branch_id=' + this.branch)
+                    .then((response) => {
+                        this.managersData = response.data;
+                    })
+            },
+            showDrivers() {
+                this.getDrivers();
+                this.showMainScreen = false;
+                this.doShowDrivers = true;
+            },
+            showVehicles() {
+                this.getDrivers();
+                this.getVehicles();
+                this.showMainScreen = false;
+                this.doShowVehicles = true;
+            },
+            showDrives() {
+                this.getDrivers();
+                this.getVehicles();
+                this.getDrives();
+                this.showMainScreen = false;
+                this.doShowDrives = true;
+            },
+            showManagers(){
+                this.getManagers();
+                this.showMainScreen = false;
+                this.doShowManagers = true;
+            },
+            goBackToAdminMainScreen() {
+                this.showMainScreen = false;
+                this.showAdminMainScreen = true;
+            },
+            addDriver(){
+                var data = {};
+                for( var i=0; i < document.addDriverForm.elements.length; i++ )
+                    {
+                        var fieldName = document.addDriverForm.elements[i].name;
+                        var fieldValue = document.addDriverForm.elements[i].value;
+                        data[fieldName] = fieldValue;
+                    }
+
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.post('http://localhost:1337/add/driver?branch_id=' + this.branch, data=data)
+                .then((response) => {
+                        console.log(response);
+                        this.showDrivers();
+                    })
+            },
+            addVehicle(){
+                var data = {};
+                for( var i=0; i < document.addVehiclesForm.elements.length; i++ )
+                    {
+                        var fieldName = document.addVehiclesForm.elements[i].name;
+                        var fieldValue = document.addVehiclesForm.elements[i].value;
+                        data[fieldName] = fieldValue;
+                    }
+
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.post('http://localhost:1337/add/vehicle?branch_id=' + this.branch, data=data)
+                .then((response) => {
+                        console.log(response);
+                        this.showVehicles();
+                    })
+            },
+            addDrive(){
+                var data = {};
+                for( var i=0; i < document.addDriveForm.elements.length; i++ )
+                    {
+                        var fieldName = document.addDriveForm.elements[i].name;
+                        var fieldValue = document.addDriveForm.elements[i].value;
+                        data[fieldName] = fieldValue;
+                    }
+
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.post('http://localhost:1337/add/drive?branch_id=' + this.branch, data=data)
+                .then((response) => {
+                        console.log(response);
+                        this.showDrives();
+                    })
+            },
+            addManager(){
+                var data = {};
+                for( var i=0; i < document.addManagerForm.elements.length; i++ )
+                    {
+                        var fieldName = document.addManagerForm.elements[i].name;
+                        var fieldValue = document.addManagerForm.elements[i].value;
+                        data[fieldName] = fieldValue;
+                    }
+
+                console.log("Adding manager: " + data)
+
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.post('http://localhost:1337/add/manager?branch_id=' + this.branch, data=data)
+                .then((response) => {
+                        this.showManagers();
+                    })
+            },
+            deleteDriver(driverID){
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.delete('http://localhost:1337/delete/driver?branch_id=' + this.branch + "&driver_id=" + driverID)
+                .then((response) => {
+                        this.showDrivers();
+                    })
+            },
+            deleteVehicle(vehicleID){
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.delete('http://localhost:1337/delete/vehicle?branch_id=' + this.branch + "&vehicles_id=" + vehicleID)
+                .then((response) => {
+                        this.showVehicles();
+                    })
+            },   
+            deleteDrive(driveID){
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.delete('http://localhost:1337/delete/drive?branch_id=' + this.branch + "&drive_id=" + driveID)
+                .then((response) => {
+                        this.showDrives();
+                    })
+            },
+            activateDrive(driveID){
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.put('http://localhost:1337/activate/drive?branch_id=' + this.branch + "&drive_id=" + driveID)
+                .then((response) => {
+                        this.showDrives();
+                    })
+            },
+            finishDrive(driveID){
+                var instance = axios.create({ headers: { "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Credentials": "*", "Access-Control-Allow-Origin": "*" } })
+                instance.put('http://localhost:1337/finish/drive?branch_id=' + this.branch + "&drive_id=" + driveID)
+                .then((response) => {
+                        this.showDrives();
+                    })
+            },
+        },
+        mounted: function () {
+            console.log(this.admin)
+            this.isMore = true;
+            changeStatus = (event) => {
+                var background = event.target.style.backgroundColor;
+                if (background === "green")
+                    event.target.style.backgroundColor = "red";
+                else
+                    event.target.style.backgroundColor = "green"
+            };
+        }
+
+    });
+</script>
+
+
+</html>

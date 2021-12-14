@@ -1,3 +1,0 @@
-on_insert_clients_trigger
-on_insert_services_trigger
-on_update_status_live_trigger

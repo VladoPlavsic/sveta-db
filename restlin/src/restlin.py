@@ -2,9 +2,11 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database.database import Database
-from  models.models import Login, Response, ClientUpdates, Managers, Clients, Services, ID
+from  models.models import Login, Response, PostVehicle, PostDriver, PostDrive, PostManager
 from logger.logger import Logger
 import yaml
+
+import json
 
 restlin = None
 app = None
@@ -66,17 +68,112 @@ def log_in(login: Login):
 
     try:
         db = Database(login.username, login.password)
-        response = db.get_data_for_managers()
         if(db.is_admin()):
             response.admin = True
         else:
             response.admin = False
+            group = db.get_group()
+            response.branch_id = group
     except Exception as e:
         restlin.log_error(f"Exception raised in post route /user: {e}")
         response.error = True
     restlin.log_info(f"User login: {login.username}")
     return response
 
+@app.get("/managers")
+def get_managers(branch_id: int):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    managers = db.get_managers(branch_id=branch_id)
+    return managers
+
+@app.get("/drivers/")
+def get_drivers(branch_id: int):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    drivers = db.get_drivers(branch=branch_id)
+    return drivers
+
+@app.get("/vehicles/")
+def get_vehicles(branch_id: int):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    vehicles = db.get_vehicles(branch=branch_id)
+    return vehicles
+
+@app.get("/drives/")
+def get_drives(branch_id: int):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    drives = db.get_drives(branch=branch_id)
+    return drives
+
+@app.post("/add/manager")
+def add_manager(manager: PostManager, branch_id: int):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    response = db.add_manager(manager=manager, branch_id=branch_id)
+    return {"status": "ok" if response else "error"}
+
+@app.post("/add/driver")
+def add_driver(driver: PostDriver, branch_id: int):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    response = db.add_driver(driver=driver, branch_id=branch_id)
+    return {"status": "ok" if response else "error"}
+
+@app.post("/add/vehicle")
+def add_vehicle(vehicle: PostVehicle, branch_id: int):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    response = db.add_vehicle(vehicle=vehicle, branch_id=branch_id)
+    return {"status": "ok" if response else "error"}
+
+@app.post("/add/drive")
+def add_drive(drive: PostDrive, branch_id: int):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    response = db.add_drive(drive=drive, branch_id=branch_id)
+    return {"status": "ok" if response else "error"}
+
+@app.delete("/delete/driver")
+def delete_driver(branch_id, driver_id):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    response = db.delete_driver(driver_id=driver_id, branch_id=branch_id)
+    return {"status": "ok" if response else "error"}
+
+@app.delete("/delete/vehicle")
+def delete_vehicle(branch_id, vehicles_id):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    response = db.delete_vehicle(vehicles_id=vehicles_id, branch_id=branch_id)
+    return {"status": "ok" if response else "error"}
+
+
+@app.delete("/delete/drive")
+def delete_drive(branch_id, drive_id):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    response = db.delete_drive(drive_id=drive_id, branch_id=branch_id)
+    return {"status": "ok" if response else "error"}
+
+@app.put("/activate/drive")
+def activate_drive(branch_id, drive_id):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    response = db.set_drive_active(drive_id=drive_id, branch_id=branch_id)
+    return {"status": "ok" if response else "error"}
+
+@app.put("/finish/drive")
+def finish_drive(branch_id, drive_id):
+    login = restlin.get_login()
+    db = Database(login.username, login.password)
+    response = db.set_drive_finished(drive_id=drive_id, branch_id=branch_id)
+    return {"status": "ok" if response else "error"}
+
+
+"""
 @app.put("/update")
 def update_user(client_updates: ClientUpdates):
     login = restlin.get_login()
@@ -161,6 +258,7 @@ def insert_role(role: Login):
     db = Database(login.username, login.password)
     restlin.log_warning(f"Added new role {role.username} by: {login.username}")
     return db.insert_role(role)
+"""
 
 if __name__ == "__main__":
     restlin.start_unicorn()

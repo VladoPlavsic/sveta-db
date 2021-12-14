@@ -1,5 +1,0 @@
-administrator_client_view
-administrator_user_view
-administrator_service_view
-managers_view (clients)
-managers_live_view (statuses)
