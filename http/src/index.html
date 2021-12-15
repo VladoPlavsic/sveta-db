@@ -27,11 +27,11 @@
                     Назад<span aria-hidden>_</span>
                     <span aria-hidden class="cybr-btn__glitch">Назад</span>
                 </button>
-                <p>Choose table</p>
-                <a href="#" @click="showDrivers">Drivers</a>
-                <a href="#" @click="showVehicles">Vehicles</a>
-                <a href="#" @click="showDrives">Drives</a>
-                <a v-if="admin" href="#" @click="showManagers">Managers</a>
+                <p>Выберите таблицу</p>
+                <a href="#" @click="showDrivers">Водители</a>
+                <a href="#" @click="showVehicles">Транспортные средства</a>
+                <a href="#" @click="showDrives">Перевозки</a>
+                <a v-if="admin" href="#" @click="showManagers">Менаджеры</a>
             </div>
 
             <div v-if="doShowDrivers" class="center-table-div">
@@ -102,7 +102,7 @@
                         <tr>
                             <th>ID</th>
                             <th>Марка</th>
-                            <th>Грузоподёмность</td>
+                            <th>Грузоподъёмность</td>
                             <th>Статус</th>
                             <th>ID водителя</th>
                             <th>Удалить</th>
@@ -129,8 +129,8 @@
                                 <label for="name" class="form__label">Марка</label>
                             </div>
                             <div class="form__group field">
-                                <input placeholder="Грузоподёмность" name="carry_capacity" class="form__field"/>
-                                <label for="name" class="form__label">Грузоподёмность</label>
+                                <input placeholder="Грузоподъёмность" name="carry_capacity" class="form__field"/>
+                                <label for="name" class="form__label">Грузоподъёмность</label>
                             </div>
                             <div class="box">
                                 <select name="driver_id">
@@ -166,7 +166,7 @@
                             <th>ID водителя</th>
                             <th>ID транспортного средства</td>
                             <th>Масса груза</th>
-                            <th>Дестинация</th>
+                            <th>Пункт назначения</th>
                             <th>Расстояние</th>
                             <th>Цена</th>
                             <th>Активировать</th>
@@ -182,7 +182,7 @@
                                 <td>{{ drive.destination }}</td>
                                 <td>{{ drive.destination_distance }}</td>  
                                 <td>{{ drive.price }}</td>  
-                                <td><img src="img/trahs.svg" @click="activateDrive(drive.id)"></td>
+                                <td><img src="img/move.svg" @click="activateDrive(drive.id)"></td>
                                 <td><img src="img/trahs.svg" @click="deleteDrive(drive.id)"></td>
                             </tr>
                         </tbody>
@@ -208,8 +208,8 @@
                                 <label for="name" class="form__label">Масса</label>
                             </div>
                             <div class="form__group field">
-                                <input placeholder="Дестинация" name="destination" class="form__field"/>
-                                <label for="name" class="form__label">Дестинация</label>
+                                <input placeholder="Пункт назначения" name="destination" class="form__field"/>
+                                <label for="name" class="form__label">Пункт назначения</label>
                             </div>
                             <div class="form__group field">
                                 <input placeholder="Расстояние" name="destination_distance" class="form__field"/>
@@ -241,7 +241,7 @@
                         <th>ID водителя</th>
                         <th>ID транспортного средства</td>
                         <th>Масса груза</th>
-                        <th>Дестинация</th>
+                        <th>Пункт назначения</th>
                         <th>Расстояние</th>
                         <th>Цена</th>
                         <th>Закончить</th>
@@ -256,7 +256,7 @@
                             <td>{{ drive.destination }}</td>
                             <td>{{ drive.destination_distance }}</td>  
                             <td>{{ drive.price }}</td>  
-                            <td><img src="img/trahs.svg" @click="finishDrive(drive.id)"></td>
+                            <td><img src="img/move.svg" @click="finishDrive(drive.id)"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -271,7 +271,7 @@
                         <th>ID водителя</th>
                         <th>ID транспортного средства</td>
                         <th>Масса груза</th>
-                        <th>Дестинация</th>
+                        <th>Пункт назначения</th>
                         <th>Расстояние</th>
                         <th>Цена</th>
                     </tr>
@@ -340,10 +340,10 @@
 
             <div v-if="admin">
                 <div v-if="showAdminMainScreen" class="admin-main-screen">
-                    <p>Choose branch</p>
-                    <a href="#" @click="showBranch1">Branch1</a>
-                    <a href="#" @click="showBranch2">Branch2</a>
-                    <a href="#" @click="showBranch3">Branch3</a>
+                    <p>Выберите отделение</p>
+                    <a href="#" @click="showBranch1">Отделение1</a>
+                    <a href="#" @click="showBranch2">Отделение2</a>
+                    <a href="#" @click="showBranch3">Отделение3</a>
                 </div>
             </div>
         </div>

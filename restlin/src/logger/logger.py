@@ -1,10 +1,9 @@
 import logging
 
-
 class Logger:
     def __init__(self, filename):
         logging.basicConfig(
-            filename="", level=logging.INFO)
+            filename="src/logger/log", level=logging.INFO)
 
     def log_info(self, message):
         logging.info(message)
